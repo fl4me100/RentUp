@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RentUp — Don't buy, rent.</title>
+  <meta name="description" content="Plataforma de aluguer de objetos entre particulares. Economia circular, simples e acessível.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     TOAST (notificações globais)
+═════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: AUTH — Login / Registo
+═════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="auth-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="auth-modal-title">Entrar</span>
+      <button class="modal-close" onclick="closeModal('auth-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login"    onclick="switchAuthTab('login')">Entrar</button>
+        <button class="auth-tab"        id="tab-register" onclick="switchAuthTab('register')">Criar conta</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="form-section active" id="section-login">
+        <div class="alert alert-error" id="err-login">Email ou palavra-passe incorretos.</div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="l-email" placeholder="o.teu@email.pt" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Palavra-passe</label>
+          <input type="password" id="l-pass" placeholder="••••••••"
+                 autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <button class="btn btn-brand" style="margin-top:6px;" onclick="doLogin()">Entrar na conta</button>
+        <p style="text-align:center; font-size:13px; color:var(--text-3); margin-top:14px;">
+          Ainda não tens conta?
+          <a href="#" style="color:var(--brand); font-weight:700;"
+             onclick="switchAuthTab('register'); return false;">Regista-te grátis</a>
+        </p>
+      </div>
+
+      <!-- REGISTO -->
+      <div class="form-section" id="section-register">
+        <div class="alert alert-error" id="err-register"></div>
+        <div class="field">
+          <label>Nome completo *</label>
+          <input type="text" id="r-name" placeholder="Ex: Maria Silva">
+        </div>
+        <div class="field">
+          <label>Email *</label>
+          <input type="email" id="r-email" placeholder="o.teu@email.pt">
+        </div>
+        <div class="field">
+          <label>Palavra-passe * (mínimo 6 caracteres)</label>
+          <input type="password" id="r-pass" placeholder="Escolhe uma palavra-passe segura">
+        </div>
+        <div class="field">
+          <label>Região *</label>
+          <select id="r-region">
+            <option value="">— Seleciona a tua região —</option>
+            <option>Lisboa</option>
+            <option>Porto</option>
+            <option>Braga</option>
+            <option>Coimbra</option>
+            <option>Faro</option>
+            <option>Setúbal</option>
+            <option>Aveiro</option>
+            <option>Viseu</option>
+            <option>Évora</option>
+            <option>Leiria</option>
+            <option>Santarém</option>
+            <option>Viana do Castelo</option>
+            <option>Bragança</option>
+            <option>Vila Real</option>
+            <option>Guarda</option>
+            <option>Castelo Branco</option>
+            <option>Portalegre</option>
+            <option>Beja</option>
+          </select>
+        </div>
+        <button class="btn btn-brand" onclick="doRegister()">Criar conta gratuita</button>
+        <p style="text-align:center; font-size:12px; color:var(--text-3); margin-top:12px;">
+          Ao criar conta concordas com os nossos Termos e Política de Privacidade.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: CRIAR ANÚNCIO
+═════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="create-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Publicar anúncio</span>
+      <button class="modal-close" onclick="closeModal('create-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Upload de foto -->
+      <div class="photo-drop" id="photo-drop">
+        <input type="file" accept="image/*" id="photo-input" onchange="handlePhoto(event)">
+        <img id="photo-preview" style="display:none;" alt="Prévia da foto">
+        <div class="photo-drop-hint" id="photo-hint">
+          <span class="ico">📷</span>
+          <p>Clica ou arrasta a foto aqui</p>
+          <small>JPG, PNG, WEBP — recomendado</small>
+        </div>
+      </div>
+
+      <div class="alert alert-error" id="err-create"></div>
+
+      <div class="field">
+        <label>Título *</label>
+        <input type="text" id="c-title"
+               placeholder='Ex: "Furadeira Bosch Professional 18V"'
+               maxlength="80">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Categoria *</label>
+          <select id="c-cat">
+            <option value="">— Escolhe —</option>
+            <option value="Ferramentas">🔧 Ferramentas</option>
+            <option value="Desporto">⚽ Desporto</option>
+            <option value="Jardim">🌿 Jardim</option>
+            <option value="Tecnologia">💻 Tecnologia</option>
+            <option value="Música">🎸 Música</option>
+            <option value="Camping">⛺ Camping</option>
+            <option value="Eventos">🎉 Eventos</option>
+            <option value="Viagem">✈️ Viagem</option>
+            <option value="Casa">🏠 Casa</option>
+            <option value="Outro">📦 Outro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Preço / dia (€) *</label>
+          <input type="number" id="c-price" placeholder="Ex: 5.00" min="0.5" step="0.5">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Descrição *</label>
+        <textarea id="c-desc"
+          placeholder="Estado do objeto, o que está incluído, condições especiais de utilização..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Região (da tua conta)</label>
+        <input type="text" id="c-region" class="field-readonly" readonly>
+      </div>
+
+      <button class="btn btn-accent" onclick="doCreate()">📢 Publicar anúncio agora</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: DETALHE DO ANÚNCIO
+═════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="detail-overlay">
+  <div class="modal det-modal">
+    <button class="modal-close"
+            style="position:absolute; top:14px; right:14px; z-index:10;"
+            onclick="closeModal('detail-overlay')">✕</button>
+    <div class="det-img-wrap" id="det-img-wrap">
+      <img id="det-img" style="display:none;" alt="">
+      <span id="det-emoji"></span>
+    </div>
+    <div class="det-body">
+      <div class="det-cat-badge" id="det-cat"></div>
+      <h2 class="det-title"   id="det-title"></h2>
+      <div class="det-price-row">
+        <span class="det-price" id="det-price"></span>
+        <span class="det-price-unit">por dia</span>
+      </div>
+      <div class="det-divider"></div>
+      <p class="det-desc" id="det-desc"></p>
+      <div class="det-meta-grid">
+        <div class="det-meta-item">
+          <div class="label">Região</div>
+          <div class="value" id="det-region"></div>
+        </div>
+        <div class="det-meta-item">
+          <div class="label">Categoria</div>
+          <div class="value" id="det-cat2"></div>
+        </div>
+        <div class="det-meta-item">
+          <div class="label">Disponibilidade</div>
+          <div class="value avail">✅ Disponível</div>
+        </div>
+        <div class="det-meta-item">
+          <div class="label">Publicado em</div>
+          <div class="value" id="det-date"></div>
+        </div>
+      </div>
+      <div class="seller-block">
+        <div class="seller-avatar" id="det-avatar"></div>
+        <div class="seller-info">
+          <div class="name" id="det-seller-name"></div>
+          <div class="sub"  id="det-seller-reg"></div>
+        </div>
+      </div>
+      <button class="btn btn-accent"         onclick="simulateReserva()">📅 Pedir reserva</button>
+      <button class="btn btn-outline-brand"  onclick="closeModal('detail-overlay')"
+              style="margin-top:10px;">Voltar às listagens</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE: HOME
+═════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <div class="logo" onclick="gotoPage('home')">
+          <div>
+            <div class="logo-wordmark">
+              <span class="rent">Rent</span><span class="up">Up</span>
+            </div>
+            <div class="logo-tagline">Don't buy, rent.</div>
+          </div>
+        </div>
+        <div class="search-bar">
+          <input type="text" id="nav-search"
+                 placeholder="Pesquisa objetos para alugar..."
+                 oninput="renderGrid()">
+          <button onclick="renderGrid()">🔍</button>
+        </div>
+        <div class="nav-actions" id="nav-actions">
+          <!-- injetado por script.js -->
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Não compres — <em>aluga</em>.<br>Economia circular ao teu alcance.</h1>
+      <p>Aluga objetos de vizinhos perto de ti. Poupa dinheiro, poupa o planeta.</p>
+      <div class="hero-search">
+        <input type="text" id="hero-search" placeholder="O que precisas de alugar hoje?">
+        <button onclick="heroSearch()">Pesquisar</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong id="stat-listings">0</strong>
+          <span>anúncios ativos</span>
+        </div>
+        <div class="hero-stat">
+          <strong id="stat-users">0</strong>
+          <span>utilizadores</span>
+        </div>
+        <div class="hero-stat">
+          <strong>18</strong>
+          <span>regiões</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Barra de categorias (sticky) -->
+  <div class="cats-section">
+    <div class="container">
+      <div class="cats-inner" id="cats-bar">
+        <!-- injetado por script.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout principal: sidebar + grelha -->
+  <div class="main-layout">
+
+    <!-- Sidebar de filtros -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <h3>Filtrar por Região</h3>
+        <label><input type="radio" name="f-region" value=""          checked onchange="applyFilters()"> Todas</label>
+        <label><input type="radio" name="f-region" value="Lisboa"    onchange="applyFilters()"> Lisboa</label>
+        <label><input type="radio" name="f-region" value="Porto"     onchange="applyFilters()"> Porto</label>
+        <label><input type="radio" name="f-region" value="Braga"     onchange="applyFilters()"> Braga</label>
+        <label><input type="radio" name="f-region" value="Coimbra"   onchange="applyFilters()"> Coimbra</label>
+        <label><input type="radio" name="f-region" value="Faro"      onchange="applyFilters()"> Faro</label>
+        <label><input type="radio" name="f-region" value="Aveiro"    onchange="applyFilters()"> Aveiro</label>
+        <label><input type="radio" name="f-region" value="Évora"     onchange="applyFilters()"> Évora</label>
+      </div>
+      <div class="sidebar-card">
+        <h3>Preço por Dia</h3>
+        <div class="price-range-inputs">
+          <input type="number" id="f-min" placeholder="Min €" min="0" oninput="applyFilters()">
+          <input type="number" id="f-max" placeholder="Max €" min="0" oninput="applyFilters()">
+        </div>
+        <button class="sidebar-apply" onclick="applyFilters()">Aplicar filtros</button>
+      </div>
+      <div class="sidebar-card sidebar-tip">
+        <h3>💡 Tens objetos parados?</h3>
+        <p>Publica-os e ganha dinheiro enquanto ajudas outros!</p>
+        <button class="btn btn-brand btn-sm" style="margin-top:12px;" onclick="openCreate()">
+          + Publicar anúncio
+        </button>
+      </div>
+    </aside>
+
+    <!-- Área de listagens -->
+    <div class="listings-area">
+      <div class="listings-header">
+        <span class="listings-title" id="listings-title">Todos os anúncios</span>
+        <span class="listings-count" id="listings-count"></span>
+      </div>
+      <div class="grid" id="main-grid">
+        <!-- injetado por script.js -->
+      </div>
+    </div>
+
+  </div><!-- /main-layout -->
+</div><!-- /page-home -->
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE: PERFIL
+═════════════════════════════════════════════════════════ -->
+<div class="page" id="page-profile">
+
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <div class="logo" onclick="gotoPage('home')">
+          <div>
+            <div class="logo-wordmark">
+              <span class="rent">Rent</span><span class="up">Up</span>
+            </div>
+            <div class="logo-tagline">Don't buy, rent.</div>
+          </div>
+        </div>
+        <div style="flex:1;"></div>
+        <div class="nav-actions" id="nav-actions-profile">
+          <!-- injetado por script.js -->
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="profile-hero">
+    <div class="profile-avatar" id="p-avatar"></div>
+    <p class="profile-name"    id="p-name"></p>
+    <p class="profile-sub"     id="p-sub"></p>
+  </div>
+
+  <div class="profile-body">
+
+    <!-- Estatísticas -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <span class="stat-val" id="ps-listings">0</span>
+        <span class="stat-lbl">Anúncios</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">⭐ —</span>
+        <span class="stat-lbl">Avaliação</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-val">0</span>
+        <span class="stat-lbl">Alugueres</span>
+      </div>
+    </div>
+
+    <!-- Os meus anúncios -->
+    <div class="section-card">
+      <div class="section-card-title">
+        Os meus anúncios
+        <button class="btn btn-accent btn-sm" style="width:auto;" onclick="openCreate()">
+          + Novo anúncio
+        </button>
+      </div>
+      <div id="my-listings-list">
+        <!-- injetado por script.js -->
+      </div>
+    </div>
+
+    <!-- Definições de conta -->
+    <div class="section-card">
+      <div class="section-card-title">Conta</div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Email</label>
+        <input type="text" id="p-email-display" class="field-readonly" readonly>
+      </div>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-danger btn-sm"
+                style="width:auto;" onclick="doLogout()">Terminar sessão</button>
+        <button class="btn btn-ghost  btn-sm"
+                style="width:auto;" onclick="gotoPage('home')">← Voltar ao início</button>
+      </div>
+    </div>
+
+  </div><!-- /profile-body -->
+</div><!-- /page-profile -->
+
+<!-- ════════════════════════════════════════════════════════
+     SCRIPTS
+═════════════════════════════════════════════════════════ -->
+<script src="script.js"></script>
+
+</body>
+</html>
