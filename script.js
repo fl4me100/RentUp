@@ -733,6 +733,41 @@ function renderProfile() {
         <button class="del-btn" onclick="deleteListing('${l.id}')">🗑 Eliminar</button>
       </div>`;
   }).join('');
+
+  /* ── Favoritos ── */
+  const favEl = document.getElementById('my-favorites-list');
+  if (!favEl) return;
+  const favs    = lsParse(LS.FAVORITES) || {};
+  const favIds  = favs[currentUser.id]  || [];
+  const favList = listings.filter(l => favIds.includes(l.id));
+
+  if (!favList.length) {
+    favEl.innerHTML = `
+      <div class="empty-state" style="padding:28px 0;">
+        <div class="ico">🤍</div>
+        <h3>Ainda sem favoritos</h3>
+        <p>Clica no coração num anúncio para o guardar aqui.</p>
+      </div>`;
+    return;
+  }
+
+  favEl.innerHTML = favList.map(l => {
+    const emoji = EMOJI[l.category] || '📦';
+    const thumb = l.photo
+      ? `<img src="${l.photo}" alt="${escHtml(l.title)}">`
+      : emoji;
+    return `
+      <div class="my-listing-row">
+        <div class="my-listing-thumb" onclick="openDetail('${l.id}')">${thumb}</div>
+        <div class="my-listing-info" onclick="openDetail('${l.id}')">
+          <div class="my-listing-name">${escHtml(l.title)}</div>
+          <div class="my-listing-price">${(+l.price).toFixed(2)}€ / dia</div>
+          <div class="my-listing-region">📍 ${escHtml(l.region)}</div>
+        </div>
+        <button class="del-btn" style="background:#fee2e2;color:#c53030;"
+                onclick="removeFav('${l.id}')">🤍 Remover</button>
+      </div>`;
+  }).join('');
 }
 
 function deleteListing(id) {
@@ -743,6 +778,16 @@ function deleteListing(id) {
   lsSave(LS.LISTINGS, listings);
   renderProfile();
   showToast('🗑️ Anúncio eliminado com sucesso.');
+}
+
+function removeFav(listingId) {
+  if (!currentUser) return;
+  const favs     = lsParse(LS.FAVORITES) || {};
+  const userFavs = (favs[currentUser.id] || []).filter(id => id !== listingId);
+  favs[currentUser.id] = userFavs;
+  lsSave(LS.FAVORITES, favs);
+  renderProfile();
+  showToast('🤍 Removido dos favoritos.');
 }
 
 /* ════════════════════════════════════════════════════════════
