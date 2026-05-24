@@ -79,27 +79,13 @@ a { text-decoration: none; color: inherit; }
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   cursor: pointer;
   flex-shrink: 0;
 }
 .logo img {
-  height: 38px;
+  height: 46px;
   width: auto;
-}
-.logo-wordmark {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -.5px;
-  line-height: 1;
-}
-.logo-wordmark .rent { color: var(--brand); }
-.logo-wordmark .up   { color: var(--cyan); }
-.logo-tagline {
-  font-size: 10px;
-  color: var(--text-3);
-  font-weight: 500;
-  margin-top: 1px;
+  filter: brightness(0) invert(0);
 }
 
 /* Search bar */
@@ -913,6 +899,28 @@ a { text-decoration: none; color: inherit; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ════════════════════════════════════════════════════════════
+   MAP
+════════════════════════════════════════════════════════════ */
+.det-map-wrap {
+  margin-top: 18px;
+}
+.det-map-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+#det-map {
+  width: 100%;
+  height: 200px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* ════════════════════════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -938,4 +946,3 @@ a { text-decoration: none; color: inherit; }
   .card-price { font-size: 16px; }
   .logo-tagline { display: none; }
 }
-

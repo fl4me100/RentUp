@@ -19,6 +19,28 @@ const CATS = [
 ];
 const EMOJI = Object.fromEntries(CATS.map(c => [c.id, c.emoji]));
 
+/* Coordenadas por distrito */
+const DISTRICT_COORDS = {
+  'Lisboa':           [38.7169, -9.1399],
+  'Porto':            [41.1579, -8.6291],
+  'Braga':            [41.5503, -8.4200],
+  'Coimbra':          [40.2033, -8.4103],
+  'Faro':             [37.0194, -7.9322],
+  'Setúbal':          [38.5244, -8.8882],
+  'Aveiro':           [40.6405, -8.6538],
+  'Viseu':            [40.6566, -7.9122],
+  'Évora':            [38.5714, -7.9076],
+  'Leiria':           [39.7436, -8.8071],
+  'Santarém':         [39.2369, -8.6860],
+  'Viana do Castelo': [41.6935, -8.8341],
+  'Bragança':         [41.8061, -6.7589],
+  'Vila Real':        [41.3006, -7.7457],
+  'Guarda':           [40.5374, -7.2684],
+  'Castelo Branco':   [39.8222, -7.4914],
+  'Portalegre':       [39.2967, -7.4281],
+  'Beja':             [38.0150, -7.8636],
+};
+
 /* Chaves do LocalStorage */
 const LS = {
   USERS:    'ru_users',
@@ -33,6 +55,8 @@ let currentUser    = lsParse(LS.CURRENT)  || null;
 let activeCat      = 'all';
 let photob64       = null;
 let currentDetailId = null;
+let detailMap      = null;
+let detailMarker   = null;
 
 /* ── Helpers LocalStorage ────────────────────────────────── */
 function lsParse(key) {
@@ -59,16 +83,16 @@ function seedIfEmpty() {
   }
 
   const seeds = [
-    { title: 'Furadeira Bosch 18V Professional',   category: 'Ferramentas', description: 'Furadeira percutora profissional com 2 baterias e mala de transporte. Excelente estado, pouco usada.', price: 8,  region: 'Lisboa'  },
-    { title: 'Bicicleta Montanha Trek Marlin 5',    category: 'Desporto',    description: '21 velocidades, quadro alumínio, travões a disco hidráulicos. Capacete incluído. Perfeita para trilhos.', price: 15, region: 'Porto'   },
-    { title: 'Tenda Campismo 4 Pessoas Quechua',    category: 'Camping',     description: 'Tenda familiar impermeável (3000mm HH). Fácil montagem em 10 min. Estacas e cordas incluídas.', price: 12, region: 'Braga'   },
-    { title: 'Drone DJI Mini 3 Pro',                category: 'Tecnologia',  description: 'Câmara 4K, autonomia 38 min, sem necessidade de registo. 2 baterias e carregador incluídos.', price: 35, region: 'Lisboa'  },
-    { title: 'Guitarra Fender Stratocaster',        category: 'Música',      description: 'Guitarra elétrica em perfeito estado. Cabo P10 e amplificador Fender de 15W incluídos.', price: 20, region: 'Coimbra' },
-    { title: 'Cortador Relva Bosch Elétrico 1800W', category: 'Jardim',      description: 'Corte de 43cm, reservatório de 50L. Cabo de extensão 25m incluído. Ideal para jardins até 800m².', price: 18, region: 'Faro'    },
-    { title: 'Projetor Epson Full HD 3300lm',       category: 'Eventos',     description: '3300 lúmens, resolução Full HD, HDMI e WiFi. Écran 100" incluído. Perfeito para apresentações.', price: 25, region: 'Porto'   },
-    { title: 'Kit Escalada Completo Black Diamond', category: 'Desporto',    description: 'Arnês, capacete, mosquetões, corda 60m, sacos de magnésio. Tudo certificado CE e em bom estado.', price: 22, region: 'Aveiro'  },
-    { title: 'Câmara Sony A7III + 24-70mm',         category: 'Tecnologia',  description: 'Full-frame mirrorless, 24MP. Objectiva 24-70mm f/2.8 incluída. Ideal para eventos e retratos.', price: 55, region: 'Lisboa'  },
-    { title: 'Stand-Up Paddle Decathlon',           category: 'Desporto',    description: 'Prancha inflável 10\'6", remo ajustável, colete e bomba de ar incluídos. Estado impecável.', price: 30, region: 'Faro'    },
+    { title: 'Furadeira Bosch 18V Professional',   category: 'Ferramentas', description: 'Furadeira percutora profissional com 2 baterias e mala de transporte. Excelente estado, pouco usada.', price: 8,  region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop' },
+    { title: 'Bicicleta Montanha Trek Marlin 5',    category: 'Desporto',    description: '21 velocidades, quadro alumínio, travões a disco hidráulicos. Capacete incluído. Perfeita para trilhos.', price: 15, region: 'Porto',   photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop' },
+    { title: 'Tenda Campismo 4 Pessoas Quechua',    category: 'Camping',     description: 'Tenda familiar impermeável (3000mm HH). Fácil montagem em 10 min. Estacas e cordas incluídas.', price: 12, region: 'Braga',   photo: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&auto=format&fit=crop' },
+    { title: 'Drone DJI Mini 3 Pro',                category: 'Tecnologia',  description: 'Câmara 4K, autonomia 38 min, sem necessidade de registo. 2 baterias e carregador incluídos.', price: 35, region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&auto=format&fit=crop' },
+    { title: 'Guitarra Fender Stratocaster',        category: 'Música',      description: 'Guitarra elétrica em perfeito estado. Cabo P10 e amplificador Fender de 15W incluídos.', price: 20, region: 'Coimbra', photo: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&auto=format&fit=crop' },
+    { title: 'Cortador Relva Bosch Elétrico 1800W', category: 'Jardim',      description: 'Corte de 43cm, reservatório de 50L. Cabo de extensão 25m incluído. Ideal para jardins até 800m².', price: 18, region: 'Faro',    photo: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&auto=format&fit=crop' },
+    { title: 'Projetor Epson Full HD 3300lm',       category: 'Eventos',     description: '3300 lúmens, resolução Full HD, HDMI e WiFi. Écran 100" incluído. Perfeito para apresentações.', price: 25, region: 'Porto',   photo: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600&auto=format&fit=crop' },
+    { title: 'Kit Escalada Completo Black Diamond', category: 'Desporto',    description: 'Arnês, capacete, mosquetões, corda 60m, sacos de magnésio. Tudo certificado CE e em bom estado.', price: 22, region: 'Aveiro',  photo: 'https://images.unsplash.com/photo-1601933470096-0e34634ffcde?w=600&auto=format&fit=crop' },
+    { title: 'Câmara Sony A7III + 24-70mm',         category: 'Tecnologia',  description: 'Full-frame mirrorless, 24MP. Objectiva 24-70mm f/2.8 incluída. Ideal para eventos e retratos.', price: 55, region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop' },
+    { title: 'Stand-Up Paddle Decathlon',           category: 'Desporto',    description: 'Prancha inflável 10\'6", remo ajustável, colete e bomba de ar incluídos. Estado impecável.', price: 30, region: 'Faro',    photo: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&auto=format&fit=crop' },
   ];
 
   seeds.forEach((s, i) => {
@@ -76,7 +100,6 @@ function seedIfEmpty() {
       id: 'seed_' + i,
       userId: 'demo',
       ...s,
-      photo: null,
       createdAt: new Date(Date.now() - i * 86400000 * 1.5).toISOString(),
     });
   });
@@ -439,6 +462,23 @@ function openDetail(id) {
   }
 
   openModal('detail-overlay');
+
+  /* Mapa com pin do distrito */
+  setTimeout(() => {
+    const coords = DISTRICT_COORDS[l.region] || [39.5, -8.0];
+    if (!detailMap) {
+      detailMap = L.map('det-map', { zoomControl: true, scrollWheelZoom: false }).setView(coords, 10);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(detailMap);
+      detailMarker = L.marker(coords).addTo(detailMap).bindPopup(l.region).openPopup();
+    } else {
+      if (detailMarker) detailMap.removeLayer(detailMarker);
+      detailMap.setView(coords, 10);
+      detailMarker = L.marker(coords).addTo(detailMap).bindPopup(l.region).openPopup();
+      detailMap.invalidateSize();
+    }
+  }, 150);
 }
 
 function simulateReserva() {

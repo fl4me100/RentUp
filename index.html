@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
@@ -222,6 +223,10 @@
       <button class="btn btn-accent"         onclick="simulateReserva()">📅 Pedir reserva</button>
       <button class="btn btn-outline-brand"  onclick="closeModal('detail-overlay')"
               style="margin-top:10px;">Voltar às listagens</button>
+      <div class="det-map-wrap">
+        <div class="det-map-label">📍 Localização aproximada</div>
+        <div id="det-map"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -236,12 +241,7 @@
     <div class="container">
       <div class="navbar-inner">
         <div class="logo" onclick="gotoPage('home')">
-          <div>
-            <div class="logo-wordmark">
-              <span class="rent">Rent</span><span class="up">Up</span>
-            </div>
-            <div class="logo-tagline">Don't buy, rent.</div>
-          </div>
+          <img src="logo_rentup.png" alt="RentUp">
         </div>
         <div class="search-bar">
           <input type="text" id="nav-search"
@@ -347,12 +347,7 @@
     <div class="container">
       <div class="navbar-inner">
         <div class="logo" onclick="gotoPage('home')">
-          <div>
-            <div class="logo-wordmark">
-              <span class="rent">Rent</span><span class="up">Up</span>
-            </div>
-            <div class="logo-tagline">Don't buy, rent.</div>
-          </div>
+          <img src="logo_rentup.png" alt="RentUp">
         </div>
         <div style="flex:1;"></div>
         <div class="nav-actions" id="nav-actions-profile">
@@ -417,6 +412,7 @@
   </div><!-- /profile-body -->
 </div><!-- /page-profile -->
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
