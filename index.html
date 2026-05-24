@@ -220,7 +220,7 @@
           <div class="sub"  id="det-seller-reg"></div>
         </div>
       </div>
-      <button class="btn btn-accent"         onclick="simulateReserva()">📅 Pedir reserva</button>
+      <button class="btn btn-accent"         onclick="openCalendar()">📅 Pedir reserva</button>
       <button class="btn btn-outline-brand"  onclick="closeModal('detail-overlay')"
               style="margin-top:10px;">Voltar às listagens</button>
       <div class="det-map-wrap">
@@ -359,7 +359,12 @@
             <div class="logo-tagline">Don't buy, rent.</div>
           </div>
         </div>
-        <div style="flex:1;"></div>
+        <div class="search-bar">
+          <input type="text" id="nav-search-profile"
+                 placeholder="Pesquisa objetos para alugar..."
+                 oninput="profileSearch()">
+          <button onclick="profileSearch()">🔍</button>
+        </div>
         <div class="nav-actions" id="nav-actions-profile">
           <!-- injetado por script.js -->
         </div>
@@ -421,6 +426,37 @@
 
   </div><!-- /profile-body -->
 </div><!-- /page-profile -->
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: CALENDÁRIO DE RESERVA
+═════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="calendar-overlay">
+  <div class="modal cal-modal">
+    <div class="modal-header">
+      <span class="modal-title">📅 Escolhe as datas</span>
+      <button class="modal-close" onclick="closeModal('calendar-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cal-listing-info" id="cal-listing-info"></div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+        <span class="cal-month-label" id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span class="leg-avail">● Disponível</span>
+        <span class="leg-booked">● Reservado</span>
+        <span class="leg-sel">● Selecionado</span>
+      </div>
+      <div class="cal-summary" id="cal-summary"></div>
+      <button class="btn btn-accent" id="cal-confirm-btn" onclick="confirmReservation()" disabled
+              style="margin-top:12px;">
+        ✅ Confirmar reserva
+      </button>
+    </div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="script.js"></script>
