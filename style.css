@@ -81,11 +81,13 @@ a { text-decoration: none; color: inherit; }
   align-items: center;
   cursor: pointer;
   flex-shrink: 0;
+  background: #000;
+  border-radius: var(--r-md);
+  padding: 2px 8px;
 }
 .logo img {
-  height: 46px;
+  height: 42px;
   width: auto;
-  filter: brightness(0) invert(0);
 }
 
 /* Search bar */
