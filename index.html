@@ -257,6 +257,7 @@
         <div class="nav-actions" id="nav-actions">
           <!-- injetado por script.js -->
         </div>
+        <button class="btn-dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" title="Modo escuro">🌙</button>
       </div>
     </div>
   </nav>
@@ -303,14 +304,15 @@
     <aside class="sidebar">
       <div class="sidebar-card">
         <h3>Filtrar por Região</h3>
-        <label><input type="radio" name="f-region" value=""          checked onchange="applyFilters()"> Todas</label>
-        <label><input type="radio" name="f-region" value="Lisboa"    onchange="applyFilters()"> Lisboa</label>
-        <label><input type="radio" name="f-region" value="Porto"     onchange="applyFilters()"> Porto</label>
-        <label><input type="radio" name="f-region" value="Braga"     onchange="applyFilters()"> Braga</label>
-        <label><input type="radio" name="f-region" value="Coimbra"   onchange="applyFilters()"> Coimbra</label>
-        <label><input type="radio" name="f-region" value="Faro"      onchange="applyFilters()"> Faro</label>
-        <label><input type="radio" name="f-region" value="Aveiro"    onchange="applyFilters()"> Aveiro</label>
-        <label><input type="radio" name="f-region" value="Évora"     onchange="applyFilters()"> Évora</label>
+        <select class="region-select" id="f-region-select" onchange="applyFilters()">
+          <option value="">Todas as regiões</option>
+          <option>Lisboa</option><option>Porto</option><option>Braga</option>
+          <option>Coimbra</option><option>Faro</option><option>Setúbal</option>
+          <option>Aveiro</option><option>Viseu</option><option>Évora</option>
+          <option>Leiria</option><option>Santarém</option><option>Viana do Castelo</option>
+          <option>Bragança</option><option>Vila Real</option><option>Guarda</option>
+          <option>Castelo Branco</option><option>Portalegre</option><option>Beja</option>
+        </select>
       </div>
       <div class="sidebar-card">
         <h3>Preço por Dia</h3>
@@ -368,6 +370,7 @@
         <div class="nav-actions" id="nav-actions-profile">
           <!-- injetado por script.js -->
         </div>
+        <button class="btn-dark-toggle" id="dark-toggle-profile" onclick="toggleDarkMode()" title="Modo escuro">🌙</button>
       </div>
     </div>
   </nav>
@@ -426,6 +429,91 @@
 
   </div><!-- /profile-body -->
 </div><!-- /page-profile -->
+
+<!-- ════════════════════════════════════════════════════════
+     PAGE: QUEM SOMOS
+═════════════════════════════════════════════════════════ -->
+<div class="page" id="page-about">
+
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-inner">
+        <div class="logo" onclick="gotoPage('home')">
+          <div>
+            <div class="logo-wordmark"><span class="rent">Rent</span><span class="up">Up</span></div>
+            <div class="logo-tagline">Don't buy, rent.</div>
+          </div>
+        </div>
+        <div style="flex:1;"></div>
+        <button class="btn-nav btn-nav-ghost" onclick="gotoPage('home')" style="width:auto;">← Voltar</button>
+        <button class="btn-dark-toggle" id="dark-toggle-about" onclick="toggleDarkMode()" title="Modo escuro">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="about-hero">
+    <h1>Sobre a <em>RentUp</em></h1>
+    <p>Uma plataforma portuguesa criada para tornar a economia circular acessível a todos.</p>
+  </div>
+
+  <div class="about-body">
+
+    <div class="about-section">
+      <h2>🎯 A nossa missão</h2>
+      <p>A RentUp nasceu com um objetivo simples: eliminar o desperdício. Quantos objetos tens em casa que usaste uma ou duas vezes e ficaram no fundo de um armário?</p>
+      <p>Criámos um espaço onde qualquer pessoa pode alugar objetos a vizinhos da sua região, poupando dinheiro e contribuindo para um planeta mais sustentável. Em vez de comprares uma furadeira para usar uma hora, aluga-a por €8/dia. Em vez de deixares a tua bicicleta parada, ganha dinheiro com ela.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>💡 Os nossos valores</h2>
+      <div class="about-values">
+        <div class="about-value">
+          <div class="ico">♻️</div>
+          <h3>Sustentabilidade</h3>
+          <p>Cada aluguer é um objeto que não foi fabricado de novo.</p>
+        </div>
+        <div class="about-value">
+          <div class="ico">🤝</div>
+          <h3>Comunidade</h3>
+          <p>Ligamos vizinhos e construímos confiança local.</p>
+        </div>
+        <div class="about-value">
+          <div class="ico">💰</div>
+          <h3>Poupança</h3>
+          <p>Paga apenas pelo tempo que precisas.</p>
+        </div>
+        <div class="about-value">
+          <div class="ico">🔒</div>
+          <h3>Segurança</h3>
+          <p>Perfis verificados e avaliações reais.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2>👨‍💻 Equipa</h2>
+      <p>Projeto desenvolvido para a unidade curricular de <strong>Modelação e Análise de Sistemas (MAS)</strong> na Universidade de Aveiro.</p>
+      <div class="about-team">
+        <div class="about-member">
+          <div class="avatar">N</div>
+          <h3>Nuno Gomes</h3>
+          <p>Desenvolvimento</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h2>📍 Cobertura</h2>
+      <p>Atualmente a RentUp cobre todas as <strong>18 regiões de Portugal Continental</strong>, desde Viana do Castelo até ao Algarve. As ilhas estão previstas para uma fase futura.</p>
+      <div style="margin-top:16px; text-align:center;">
+        <button class="btn btn-brand" style="width:auto; padding:12px 32px;" onclick="gotoPage('home')">
+          🔍 Explorar anúncios
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /page-about -->
 
 <!-- ════════════════════════════════════════════════════════
      MODAL: CALENDÁRIO DE RESERVA

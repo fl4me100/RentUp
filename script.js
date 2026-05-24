@@ -43,20 +43,31 @@ const DISTRICT_COORDS = {
 
 /* Chaves do LocalStorage */
 const LS = {
-  USERS:    'ru_users',
-  CURRENT:  'ru_current',
-  LISTINGS: 'ru_listings',
+  USERS:        'ru_users',
+  CURRENT:      'ru_current',
+  LISTINGS:     'ru_listings',
+  FAVORITES:    'ru_favorites',
+  RESERVATIONS: 'ru_reservations',
+  THEME:        'ru_theme',
 };
 
 /* ── Estado global ───────────────────────────────────────── */
-let users          = lsParse(LS.USERS)    || [];
-let listings       = lsParse(LS.LISTINGS) || [];
-let currentUser    = lsParse(LS.CURRENT)  || null;
-let activeCat      = 'all';
-let photob64       = null;
+let users           = lsParse(LS.USERS)    || [];
+let listings        = lsParse(LS.LISTINGS) || [];
+let currentUser     = lsParse(LS.CURRENT)  || null;
+let activeCat       = 'all';
+let photob64        = null;
 let currentDetailId = null;
-let detailMap      = null;
-let detailMarker   = null;
+let detailMap       = null;
+let detailMarker    = null;
+
+/* Calendar state */
+const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calStart = null;
+let calEnd   = null;
 
 /* ── Helpers LocalStorage ────────────────────────────────── */
 function lsParse(key) {
@@ -113,6 +124,7 @@ function gotoPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo(0, 0);
+  syncDarkToggles();
 
   if (name === 'home') {
     renderNav();
@@ -136,6 +148,7 @@ function renderNav() {
 
   if (currentUser) {
     el.innerHTML = `
+      <button class="btn-nav btn-nav-ghost" onclick="gotoPage('about')" style="width:auto;">Quem somos</button>
       <button class="btn-nav btn-nav-solid" onclick="openCreate()">+ Publicar</button>
       <div class="user-chip" onclick="gotoPage('profile')">
         <div class="avatar-sm">${currentUser.name[0].toUpperCase()}</div>
@@ -143,6 +156,7 @@ function renderNav() {
       </div>`;
   } else {
     el.innerHTML = `
+      <button class="btn-nav btn-nav-ghost" onclick="gotoPage('about')" style="width:auto;">Quem somos</button>
       <button class="btn-nav btn-nav-ghost" onclick="openAuth('login')">Entrar</button>
       <button class="btn-nav btn-nav-solid" onclick="openAuth('register')">Criar conta</button>`;
   }
@@ -187,7 +201,7 @@ function selectCat(id) {
 ════════════════════════════════════════════════════════════ */
 function getFiltered() {
   const q      = (document.getElementById('nav-search')?.value || '').toLowerCase().trim();
-  const region = document.querySelector('input[name="f-region"]:checked')?.value || '';
+  const region = document.getElementById('f-region-select')?.value || '';
   const minP   = parseFloat(document.getElementById('f-min')?.value) || 0;
   const maxP   = parseFloat(document.getElementById('f-max')?.value) || Infinity;
 
@@ -224,13 +238,14 @@ function renderGrid() {
       ? `<img src="${l.photo}" alt="${escHtml(l.title)}" loading="lazy">`
       : `<span>${emoji}</span>`;
     const dateStr = new Date(l.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
+    const heart   = isFavorited(l.id) ? '❤️' : '🤍';
 
     return `
       <div class="card" onclick="openDetail('${l.id}')">
         <div class="card-img">
           ${imgHtml}
           <span class="card-badge">${escHtml(l.category)}</span>
-          <button class="card-fav" onclick="event.stopPropagation(); toggleFav(this)" title="Favoritar">🤍</button>
+          <button class="card-fav" data-id="${l.id}" onclick="toggleFav(event,'${l.id}')" title="Favoritar">${heart}</button>
         </div>
         <div class="card-body">
           <div class="card-cat">${emoji} ${escHtml(l.category)}</div>
@@ -247,8 +262,51 @@ function renderGrid() {
 
 function applyFilters() { renderGrid(); }
 
-function toggleFav(btn) {
-  btn.textContent = btn.textContent.trim() === '🤍' ? '❤️' : '🤍';
+/* ── Favorites ───────────────────────────────────────────── */
+function isFavorited(listingId) {
+  if (!currentUser) return false;
+  const favs = lsParse(LS.FAVORITES) || {};
+  return (favs[currentUser.id] || []).includes(listingId);
+}
+
+function toggleFav(e, listingId) {
+  e.stopPropagation();
+  if (!currentUser) { openAuth('login'); showToast('⚠️ Entra para guardar favoritos.'); return; }
+  const favs     = lsParse(LS.FAVORITES) || {};
+  const userFavs = favs[currentUser.id]  || [];
+  const idx      = userFavs.indexOf(listingId);
+  if (idx === -1) { userFavs.push(listingId); showToast('❤️ Adicionado aos favoritos!'); }
+  else            { userFavs.splice(idx, 1);  showToast('🤍 Removido dos favoritos.'); }
+  favs[currentUser.id] = userFavs;
+  lsSave(LS.FAVORITES, favs);
+  const btn = e.currentTarget;
+  if (btn) btn.textContent = idx === -1 ? '❤️' : '🤍';
+}
+
+/* ── Profile search ──────────────────────────────────────── */
+function profileSearch() {
+  const val = document.getElementById('nav-search-profile')?.value || '';
+  const main = document.getElementById('nav-search');
+  if (main) main.value = val;
+  gotoPage('home');
+}
+
+/* ── Dark Mode ───────────────────────────────────────────── */
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next   = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem(LS.THEME, next);
+  syncDarkToggles();
+}
+
+function syncDarkToggles() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const icon   = isDark ? '☀️' : '🌙';
+  ['dark-toggle','dark-toggle-profile','dark-toggle-about'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.textContent = icon;
+  });
 }
 
 function updateStats() {
@@ -481,15 +539,154 @@ function openDetail(id) {
   }, 150);
 }
 
-function simulateReserva() {
-  const l = listings.find(x => x.id === currentDetailId);
+/* ════════════════════════════════════════════════════════════
+   CALENDÁRIO DE RESERVA
+════════════════════════════════════════════════════════════ */
+function openCalendar() {
+  if (!currentUser) { openAuth('login'); showToast('⚠️ Entra para pedir uma reserva.'); return; }
   closeModal('detail-overlay');
-  if (!currentUser) {
-    openAuth('login');
-    showToast('⚠️ Entra para pedir uma reserva.');
-    return;
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+  calStart = null;
+  calEnd   = null;
+
+  const l = listings.find(x => x.id === currentDetailId);
+  const info = document.getElementById('cal-listing-info');
+  if (info && l) info.innerHTML = `<strong>${escHtml(l.title)}</strong> &nbsp;·&nbsp; <span style="color:var(--accent);font-weight:700;">${(+l.price).toFixed(2)}€/dia</span>`;
+
+  renderCalendar();
+  openModal('calendar-overlay');
+}
+
+function prevMonth() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+function nextMonth() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function getBookedDates(listingId) {
+  const reservations = lsParse(LS.RESERVATIONS) || [];
+  const dates = new Set();
+  reservations.filter(r => r.listingId === listingId).forEach(r => {
+    const d = new Date(r.startDate);
+    const end = new Date(r.endDate);
+    while (d <= end) {
+      dates.add(d.toISOString().split('T')[0]);
+      d.setDate(d.getDate() + 1);
+    }
+  });
+  return dates;
+}
+
+function renderCalendar() {
+  const label = document.getElementById('cal-month-label');
+  if (label) label.textContent = MONTHS_PT[calMonth] + ' ' + calYear;
+
+  const grid = document.getElementById('cal-grid');
+  if (!grid) return;
+
+  const booked  = getBookedDates(currentDetailId);
+  const today   = new Date(); today.setHours(0,0,0,0);
+  const days    = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let html      = days.map(d => `<div class="cal-day-hdr">${d}</div>`).join('');
+
+  const firstDay    = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date    = new Date(calYear, calMonth, d);
+    const dateStr = date.toISOString().split('T')[0];
+    const isPast  = date < today;
+    const isBook  = booked.has(dateStr);
+    const isSel   = dateStr === calStart || dateStr === calEnd;
+    const inRange = calStart && calEnd && dateStr > calStart && dateStr < calEnd;
+
+    let cls = 'cal-day';
+    if (isPast || isBook) cls += ' cal-day-disabled';
+    else                  cls += ' cal-day-avail';
+    if (isBook)   cls += ' cal-day-booked';
+    if (isSel)    cls += ' cal-day-sel';
+    if (inRange)  cls += ' cal-day-range';
+
+    const click = (!isPast && !isBook) ? `onclick="selectCalDay('${dateStr}')"` : '';
+    html += `<div class="${cls}" ${click}>${d}</div>`;
   }
-  showToast('📅 Pedido enviado para "' + (l?.title || 'anúncio') + '"! (simulado)');
+  grid.innerHTML = html;
+  updateCalSummary();
+}
+
+function selectCalDay(dateStr) {
+  if (!calStart || (calStart && calEnd)) {
+    calStart = dateStr; calEnd = null;
+  } else {
+    if (dateStr <= calStart) { calStart = dateStr; calEnd = null; }
+    else {
+      // Check no booked days in range
+      const booked = getBookedDates(currentDetailId);
+      let check = new Date(calStart); check.setDate(check.getDate() + 1);
+      const endD = new Date(dateStr);
+      let blocked = false;
+      while (check < endD) {
+        if (booked.has(check.toISOString().split('T')[0])) { blocked = true; break; }
+        check.setDate(check.getDate() + 1);
+      }
+      if (blocked) { showToast('⚠️ Existem datas reservadas nesse intervalo.'); }
+      else { calEnd = dateStr; }
+    }
+  }
+  renderCalendar();
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
+}
+
+function updateCalSummary() {
+  const summary = document.getElementById('cal-summary');
+  const btn     = document.getElementById('cal-confirm-btn');
+  if (!summary) return;
+  if (!calStart) {
+    summary.innerHTML = '<p style="color:var(--text-3);font-size:13px;">Clica num dia para escolher a data de início.</p>';
+    if (btn) btn.disabled = true;
+  } else if (!calEnd) {
+    summary.innerHTML = `<p style="color:var(--text-2);font-size:13px;">Início: <strong>${formatDate(calStart)}</strong> &nbsp;— agora clica na data de fim.</p>`;
+    if (btn) btn.disabled = true;
+  } else {
+    const days  = Math.round((new Date(calEnd) - new Date(calStart)) / 86400000);
+    const l     = listings.find(x => x.id === currentDetailId);
+    const total = days * (+l?.price || 0);
+    summary.innerHTML = `
+      <div class="cal-summary-box">
+        <span>📅 ${formatDate(calStart)} → ${formatDate(calEnd)}</span>
+        <span><strong>${days} dia${days>1?'s':''}</strong> &nbsp;·&nbsp; <strong style="color:var(--accent)">${total.toFixed(2)}€</strong></span>
+      </div>`;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function confirmReservation() {
+  if (!calStart || !calEnd || !currentUser) return;
+  const reservations = lsParse(LS.RESERVATIONS) || [];
+  reservations.push({
+    id:        'r_' + Date.now(),
+    listingId: currentDetailId,
+    userId:    currentUser.id,
+    startDate: calStart,
+    endDate:   calEnd,
+  });
+  lsSave(LS.RESERVATIONS, reservations);
+  closeModal('calendar-overlay');
+  const l = listings.find(x => x.id === currentDetailId);
+  showToast(`✅ Reserva confirmada para "${l?.title || 'anúncio'}"!`);
+  calStart = null; calEnd = null;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -603,6 +800,11 @@ function escHtml(str) {
    BOOT — ponto de entrada
 ════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+  /* Restore dark mode preference */
+  const savedTheme = localStorage.getItem(LS.THEME) || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
   seedIfEmpty();
   gotoPage('home');
+  syncDarkToggles();
 });
