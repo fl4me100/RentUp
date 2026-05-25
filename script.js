@@ -103,7 +103,6 @@ function seedIfEmpty() {
     { title: 'Projetor Epson Full HD 3300lm',       category: 'Eventos',     description: '3300 lúmens, resolução Full HD, HDMI e WiFi. Écran 100" incluído. Perfeito para apresentações.', price: 25, region: 'Porto',   photo: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600&auto=format&fit=crop' },
     { title: 'Kit Escalada Completo Black Diamond', category: 'Desporto',    description: 'Arnês, capacete, mosquetões, corda 60m, sacos de magnésio. Tudo certificado CE e em bom estado.', price: 22, region: 'Aveiro',  photo: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&auto=format&fit=crop' },
     { title: 'Câmara Sony A7III + 24-70mm',         category: 'Tecnologia',  description: 'Full-frame mirrorless, 24MP. Objectiva 24-70mm f/2.8 incluída. Ideal para eventos e retratos.', price: 55, region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop' },
-    { title: 'Stand-Up Paddle Decathlon',           category: 'Desporto',    description: 'Prancha inflável 10\'6", remo ajustável, colete e bomba de ar incluídos. Estado impecável.', price: 30, region: 'Faro',    photo: 'https://images.unsplash.com/photo-1531722569936-825d4eaf4418?w=600&auto=format&fit=crop' },
   ];
 
   seeds.forEach((s, i) => {
