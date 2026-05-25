@@ -773,7 +773,7 @@ function renderProfile() {
         else                    { statusCls = 'status-upcoming';  statusTxt = 'Próxima'; }
 
         const rated   = hasRated(r.id);
-        const canRate = end < today && !rated && owner;
+        const canRate = !rated && owner;
         const rateBtn = canRate
           ? `<button class="btn btn-brand btn-sm" style="width:auto;font-size:11px;padding:5px 10px;"
                onclick="openRating('${r.id}','${owner.id}','${escHtml(l?.title||'')}')">⭐ Avaliar</button>`
