@@ -48,6 +48,7 @@ const LS = {
   LISTINGS:     'ru_listings',
   FAVORITES:    'ru_favorites',
   RESERVATIONS: 'ru_reservations',
+  RATINGS:      'ru_ratings',
   THEME:        'ru_theme',
 };
 
@@ -68,6 +69,11 @@ let calYear  = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let calStart = null;
 let calEnd   = null;
+
+/* Rating state */
+let currentRating       = 0;
+let ratingReservationId = null;
+let ratingToUserId      = null;
 
 /* ── Helpers LocalStorage ────────────────────────────────── */
 function lsParse(key) {
@@ -501,8 +507,9 @@ function openDetail(id) {
   setText('det-region',      '📍 ' + l.region);
   setText('det-desc',        l.description);
   setText('det-date',        date);
+  const sellerRating = getUserRating(l.userId);
   setText('det-seller-name', seller?.name || 'Utilizador RentUp');
-  setText('det-seller-reg',  '📍 ' + (seller?.region || l.region));
+  setText('det-seller-reg',  '📍 ' + (seller?.region || l.region) + (sellerRating ? `  ·  ⭐ ${sellerRating.avg}` : ''));
   setText('det-avatar',      (seller?.name?.[0] || '?').toUpperCase());
   setText('det-emoji',       emoji);
 
@@ -696,43 +703,95 @@ function renderProfile() {
   if (!currentUser) return;
   const mine = listings.filter(l => l.userId === currentUser.id);
 
-  setText('p-avatar',      currentUser.name[0].toUpperCase());
-  setText('p-name',        currentUser.name);
-  setText('p-sub',         '📍 ' + currentUser.region + '  ·  Membro RentUp');
-  setText('ps-listings',   mine.length.toString());
+  setText('p-avatar', currentUser.name[0].toUpperCase());
+  setText('p-name',   currentUser.name);
+  setText('p-sub',    '📍 ' + currentUser.region + '  ·  Membro RentUp');
+  setText('ps-listings', mine.length.toString());
+
+  const rating   = getUserRating(currentUser.id);
+  const ratingEl = document.getElementById('ps-rating');
+  if (ratingEl) ratingEl.innerHTML = rating ? `⭐ ${rating.avg}` : '⭐ —';
+
+  const allReservations = lsParse(LS.RESERVATIONS) || [];
+  const myReservations  = allReservations.filter(r => r.userId === currentUser.id);
+  const psReservas = document.getElementById('ps-reservas');
+  if (psReservas) psReservas.textContent = myReservations.length;
 
   const emailEl = document.getElementById('p-email-display');
   if (emailEl) emailEl.value = currentUser.email;
 
+  /* ── Os meus anúncios ── */
   const listEl = document.getElementById('my-listings-list');
-  if (!listEl) return;
-
-  if (!mine.length) {
-    listEl.innerHTML = `
-      <div class="empty-state" style="padding:36px 0;">
-        <div class="ico">📦</div>
-        <h3>Ainda sem anúncios</h3>
-        <p>Publica o teu primeiro objeto e começa a ganhar!</p>
-      </div>`;
-    return;
+  if (listEl) {
+    if (!mine.length) {
+      listEl.innerHTML = `
+        <div class="empty-state" style="padding:36px 0;">
+          <div class="ico">📦</div>
+          <h3>Ainda sem anúncios</h3>
+          <p>Publica o teu primeiro objeto e começa a ganhar!</p>
+        </div>`;
+    } else {
+      listEl.innerHTML = mine.map(l => {
+        const emoji = EMOJI[l.category] || '📦';
+        const thumb = l.photo ? `<img src="${l.photo}" alt="${escHtml(l.title)}">` : emoji;
+        return `
+          <div class="my-listing-row">
+            <div class="my-listing-thumb" onclick="openDetail('${l.id}')">${thumb}</div>
+            <div class="my-listing-info" onclick="openDetail('${l.id}')">
+              <div class="my-listing-name">${escHtml(l.title)}</div>
+              <div class="my-listing-price">${(+l.price).toFixed(2)}€ / dia</div>
+              <div class="my-listing-region">📍 ${escHtml(l.region)}</div>
+            </div>
+            <button class="del-btn" onclick="deleteListing('${l.id}')">🗑 Eliminar</button>
+          </div>`;
+      }).join('');
+    }
   }
 
-  listEl.innerHTML = mine.map(l => {
-    const emoji = EMOJI[l.category] || '📦';
-    const thumb = l.photo
-      ? `<img src="${l.photo}" alt="${escHtml(l.title)}">`
-      : emoji;
-    return `
-      <div class="my-listing-row">
-        <div class="my-listing-thumb" onclick="openDetail('${l.id}')">${thumb}</div>
-        <div class="my-listing-info" onclick="openDetail('${l.id}')">
-          <div class="my-listing-name">${escHtml(l.title)}</div>
-          <div class="my-listing-price">${(+l.price).toFixed(2)}€ / dia</div>
-          <div class="my-listing-region">📍 ${escHtml(l.region)}</div>
-        </div>
-        <button class="del-btn" onclick="deleteListing('${l.id}')">🗑 Eliminar</button>
-      </div>`;
-  }).join('');
+  /* ── Reservas ── */
+  const resEl = document.getElementById('my-reservations-list');
+  if (resEl) {
+    if (!myReservations.length) {
+      resEl.innerHTML = `
+        <div class="empty-state" style="padding:28px 0;">
+          <div class="ico">📅</div>
+          <h3>Ainda sem reservas</h3>
+          <p>As tuas reservas aparecerão aqui.</p>
+        </div>`;
+    } else {
+      const today = new Date(); today.setHours(0,0,0,0);
+      resEl.innerHTML = myReservations.slice().reverse().map(r => {
+        const l       = listings.find(x => x.id === r.listingId);
+        const owner   = users.find(u => u.id === l?.userId);
+        const thumb   = l?.photo ? `<img src="${l.photo}" alt="">` : (EMOJI[l?.category] || '📦');
+        const start   = new Date(r.startDate + 'T12:00:00');
+        const end     = new Date(r.endDate   + 'T12:00:00');
+        const datesStr = `${formatDate(r.startDate)} → ${formatDate(r.endDate)}`;
+        let statusCls, statusTxt;
+        if (end < today)        { statusCls = 'status-completed'; statusTxt = 'Concluída'; }
+        else if (start <= today){ statusCls = 'status-active';    statusTxt = 'A decorrer'; }
+        else                    { statusCls = 'status-upcoming';  statusTxt = 'Próxima'; }
+
+        const rated   = hasRated(r.id);
+        const canRate = end < today && !rated && owner;
+        const rateBtn = canRate
+          ? `<button class="btn btn-brand btn-sm" style="width:auto;font-size:11px;padding:5px 10px;"
+               onclick="openRating('${r.id}','${owner.id}','${escHtml(l?.title||'')}')">⭐ Avaliar</button>`
+          : (rated ? `<span class="stars-display">${starsHtml(lsParse(LS.RATINGS)?.find(x=>x.reservationId===r.id&&x.fromUserId===currentUser.id)?.stars||0)}</span>` : '');
+
+        return `
+          <div class="reservation-row">
+            <div class="reservation-thumb">${thumb}</div>
+            <div class="reservation-info">
+              <div class="reservation-name">${escHtml(l?.title || 'Anúncio removido')}</div>
+              <div class="reservation-dates">📅 ${datesStr}</div>
+            </div>
+            <span class="reservation-status ${statusCls}">${statusTxt}</span>
+            ${rateBtn}
+          </div>`;
+      }).join('');
+    }
+  }
 
   /* ── Favoritos ── */
   const favEl = document.getElementById('my-favorites-list');
@@ -753,9 +812,7 @@ function renderProfile() {
 
   favEl.innerHTML = favList.map(l => {
     const emoji = EMOJI[l.category] || '📦';
-    const thumb = l.photo
-      ? `<img src="${l.photo}" alt="${escHtml(l.title)}">`
-      : emoji;
+    const thumb = l.photo ? `<img src="${l.photo}" alt="${escHtml(l.title)}">` : emoji;
     return `
       <div class="my-listing-row">
         <div class="my-listing-thumb" onclick="openDetail('${l.id}')">${thumb}</div>
@@ -788,6 +845,71 @@ function removeFav(listingId) {
   lsSave(LS.FAVORITES, favs);
   renderProfile();
   showToast('🤍 Removido dos favoritos.');
+}
+
+/* ════════════════════════════════════════════════════════════
+   RATINGS
+════════════════════════════════════════════════════════════ */
+const STAR_LABELS = ['','Muito mau 😞','Mau 😕','Razoável 😐','Bom 😊','Excelente 🤩'];
+
+function getUserRating(userId) {
+  const ratings = lsParse(LS.RATINGS) || [];
+  const userRatings = ratings.filter(r => r.toUserId === userId);
+  if (!userRatings.length) return null;
+  const avg = userRatings.reduce((s, r) => s + r.stars, 0) / userRatings.length;
+  return { avg: avg.toFixed(1), count: userRatings.length };
+}
+
+function starsHtml(avg) {
+  const full  = Math.round(+avg);
+  let html = '';
+  for (let i = 1; i <= 5; i++) html += `<span style="color:${i<=full?'#f59e0b':'#d1d5db'}">★</span>`;
+  return html;
+}
+
+function openRating(reservationId, toUserId, listingTitle) {
+  ratingReservationId = reservationId;
+  ratingToUserId      = toUserId;
+  currentRating       = 0;
+  const info = document.getElementById('rating-target-info');
+  if (info) info.innerHTML = `A avaliar reserva de <strong>${escHtml(listingTitle)}</strong>`;
+  setRating(0);
+  document.getElementById('rating-comment').value = '';
+  openModal('rating-overlay');
+}
+
+function setRating(stars) {
+  currentRating = stars;
+  document.querySelectorAll('#star-picker .star').forEach((s, i) => {
+    s.classList.toggle('active', i < stars);
+  });
+  const lbl = document.getElementById('star-label');
+  if (lbl) lbl.textContent = stars ? STAR_LABELS[stars] : 'Clica para avaliar';
+  const btn = document.getElementById('rating-submit-btn');
+  if (btn) btn.disabled = stars === 0;
+}
+
+function submitRating() {
+  if (!currentRating || !ratingReservationId || !currentUser) return;
+  const ratings = lsParse(LS.RATINGS) || [];
+  ratings.push({
+    id:            'rat_' + Date.now(),
+    reservationId: ratingReservationId,
+    fromUserId:    currentUser.id,
+    toUserId:      ratingToUserId,
+    stars:         currentRating,
+    comment:       document.getElementById('rating-comment')?.value.trim() || '',
+    date:          new Date().toISOString(),
+  });
+  lsSave(LS.RATINGS, ratings);
+  closeModal('rating-overlay');
+  showToast(`⭐ Avaliação de ${currentRating} estrela${currentRating>1?'s':''} enviada!`);
+  renderProfile();
+}
+
+function hasRated(reservationId) {
+  const ratings = lsParse(LS.RATINGS) || [];
+  return ratings.some(r => r.reservationId === reservationId && r.fromUserId === currentUser?.id);
 }
 
 /* ════════════════════════════════════════════════════════════

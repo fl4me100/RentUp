@@ -390,13 +390,19 @@
         <span class="stat-lbl">Anúncios</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">⭐ —</span>
+        <span class="stat-val" id="ps-rating">⭐ —</span>
         <span class="stat-lbl">Avaliação</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">0</span>
+        <span class="stat-val" id="ps-reservas">0</span>
         <span class="stat-lbl">Alugueres</span>
       </div>
+    </div>
+
+    <!-- As minhas reservas -->
+    <div class="section-card">
+      <div class="section-card-title">📅 As minhas reservas</div>
+      <div id="my-reservations-list"></div>
     </div>
 
     <!-- Os meus anúncios -->
@@ -533,6 +539,36 @@
 
   </div>
 </div><!-- /page-about -->
+
+<!-- ════════════════════════════════════════════════════════
+     MODAL: AVALIAÇÃO
+═════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="rating-overlay">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">⭐ Avaliar</span>
+      <button class="modal-close" onclick="closeModal('rating-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="rating-target-info" id="rating-target-info"></div>
+      <div class="star-picker" id="star-picker">
+        <span class="star" data-v="1" onclick="setRating(1)">★</span>
+        <span class="star" data-v="2" onclick="setRating(2)">★</span>
+        <span class="star" data-v="3" onclick="setRating(3)">★</span>
+        <span class="star" data-v="4" onclick="setRating(4)">★</span>
+        <span class="star" data-v="5" onclick="setRating(5)">★</span>
+      </div>
+      <div class="star-label" id="star-label">Clica para avaliar</div>
+      <div class="field" style="margin-top:14px;">
+        <label>Comentário (opcional)</label>
+        <textarea id="rating-comment" placeholder="Partilha a tua experiência..."></textarea>
+      </div>
+      <button class="btn btn-brand" id="rating-submit-btn" onclick="submitRating()" disabled>
+        Enviar avaliação
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════
      MODAL: CALENDÁRIO DE RESERVA
