@@ -238,6 +238,7 @@ function renderGrid() {
       : `<span>${emoji}</span>`;
     const dateStr = new Date(l.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
     const heart   = isFavorited(l.id) ? '❤️' : '🤍';
+    const [euros, cents] = (+l.price).toFixed(2).split('.');
 
     return `
       <div class="card" onclick="openDetail('${l.id}')">
@@ -249,7 +250,7 @@ function renderGrid() {
         <div class="card-body">
           <div class="card-cat">${emoji} ${escHtml(l.category)}</div>
           <div class="card-title">${escHtml(l.title)}</div>
-          <div class="card-price">${(+l.price).toFixed(2)}€<small> / dia</small></div>
+          <div class="card-price">${euros}<span class="card-cents">.${cents}€</span><small> / dia</small></div>
           <div class="card-meta">
             <span>📍 ${escHtml(l.region)}</span>
             <span>${dateStr}</span>

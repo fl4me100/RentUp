@@ -439,6 +439,7 @@ a { text-decoration: none; color: inherit; }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 16px;
+  align-items: start;
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -523,6 +524,7 @@ a { text-decoration: none; color: inherit; }
   gap: 3px;
 }
 .card-price small { font-size: 12px; font-weight: 500; color: var(--text-3); }
+.card-cents { font-size: 13px; font-weight: 600; }
 .card-meta {
   display: flex;
   align-items: center;
