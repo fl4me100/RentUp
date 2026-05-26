@@ -78,6 +78,68 @@
 .region-select:focus { border-color: var(--cyan); }
 
 
+/* ── Hamburger & Mobile Nav ──────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px; height: 36px;
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 6px;
+  flex-shrink: 0;
+}
+.hamburger span { display: block; height: 2px; background: var(--text); border-radius: 2px; transition: all .2s; }
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-nav { display: none; border-top: 1px solid var(--border); padding: 12px 0 8px; }
+.mobile-nav.open { display: block; }
+.mobile-search input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: var(--r-xl);
+  padding: 10px 16px; font-size: 14px; background: var(--bg); color: var(--text);
+  outline: none; box-sizing: border-box; margin-bottom: 10px;
+}
+.mobile-nav-links { display: flex; flex-direction: column; gap: 4px; }
+.mobile-nav-links button,
+.mobile-nav-links .user-chip { width: 100%; text-align: left; justify-content: flex-start; }
+
+/* ── Cats scroll buttons ─────────────────────────────────── */
+.cats-wrapper { display: flex; align-items: center; gap: 4px; }
+.cats-scroll-btn {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--brand); font-size: 18px;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.cats-scroll-btn:hover { background: var(--brand-light); border-color: var(--brand); }
+
+/* ── Region ratings ──────────────────────────────────────── */
+.region-rating-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; cursor: pointer; transition: color .12s;
+}
+.region-rating-row:last-child { border-bottom: none; }
+.region-rating-row:hover .rr-name { color: var(--brand); }
+.rr-name  { font-weight: 600; color: var(--text); }
+.rr-meta  { display: flex; align-items: center; gap: 6px; }
+.rr-stars { color: #f59e0b; font-size: 12px; }
+.rr-count { color: var(--text-3); font-size: 11px; }
+
+/* ── Profile avatar preview ──────────────────────────────── */
+.profile-avatar-preview {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--brand); color: #fff; font-size: 20px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+}
+.profile-avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar { overflow: hidden; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
@@ -1238,7 +1300,10 @@ a { text-decoration: none; color: inherit; }
   .hero-stats { gap: 20px; }
   .hero-stat strong { font-size: 18px; }
   .navbar-inner { height: 54px; }
-  .nav-actions .btn-nav-ghost { display: none; }
+  .nav-actions  { display: none; }
+  .search-bar   { display: none; }
+  .hamburger    { display: flex; }
+  .btn-dark-toggle { display: none; }
   .det-img-wrap { height: 210px; }
   .field-row { flex-direction: column; gap: 0; }
   .cats-section { top: 54px; }

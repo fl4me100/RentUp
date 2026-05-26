@@ -100,7 +100,7 @@ function seedIfEmpty() {
   }
 
   const seeds = [
-    { title: 'Berbequim Bosch 18V Professional',   category: 'Ferramentas', description: 'Berbequim percutora profissional com 2 baterias e mala de transporte. Excelente estado, pouco usada.', price: 8,  region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop' },
+    { title: 'Furadeira Bosch 18V Professional',   category: 'Ferramentas', description: 'Furadeira percutora profissional com 2 baterias e mala de transporte. Excelente estado, pouco usada.', price: 8,  region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop' },
     { title: 'Bicicleta Montanha Trek Marlin 5',    category: 'Desporto',    description: '21 velocidades, quadro alumínio, travões a disco hidráulicos. Capacete incluído. Perfeita para trilhos.', price: 15, region: 'Porto',   photo: 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=600&auto=format&fit=crop' },
     { title: 'Tenda Campismo 4 Pessoas Quechua',    category: 'Camping',     description: 'Tenda familiar impermeável (3000mm HH). Fácil montagem em 10 min. Estacas e cordas incluídas.', price: 12, region: 'Braga',   photo: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&auto=format&fit=crop' },
     { title: 'Drone DJI Mini 3 Pro',                category: 'Tecnologia',  description: 'Câmara 4K, autonomia 38 min, sem necessidade de registo. 2 baterias e carregador incluídos.', price: 35, region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&auto=format&fit=crop' },
@@ -136,6 +136,7 @@ function gotoPage(name) {
     renderCats();
     renderGrid();
     updateStats();
+    renderRegionRatings();
   }
   if (name === 'profile') {
     if (!currentUser) { gotoPage('home'); return; }
@@ -210,13 +211,24 @@ function getFiltered() {
   const minP   = parseFloat(document.getElementById('f-min')?.value) || 0;
   const maxP   = parseFloat(document.getElementById('f-max')?.value) || Infinity;
 
-  return listings.filter(l => {
+  const filtered = listings.filter(l => {
     const catOk = activeCat === 'all' || l.category === activeCat;
     const qOk   = !q || l.title.toLowerCase().includes(q) || l.description.toLowerCase().includes(q) || l.category.toLowerCase().includes(q);
     const regOk = !region || l.region === region;
     const priOk = l.price >= minP && l.price <= maxP;
     return catOk && qOk && regOk && priOk;
   });
+
+  /* Sort: user's region first, then by date */
+  if (currentUser?.region) {
+    filtered.sort((a, b) => {
+      const aHome = a.region === currentUser.region ? -1 : 1;
+      const bHome = b.region === currentUser.region ? -1 : 1;
+      return aHome - bHome || new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }
+
+  return filtered;
 }
 
 function renderGrid() {
@@ -267,6 +279,128 @@ function renderGrid() {
 }
 
 function applyFilters() { renderGrid(); }
+
+/* ── Category bar scroll ─────────────────────────────────── */
+function scrollCats(dir) {
+  const bar = document.getElementById('cats-bar');
+  if (bar) bar.scrollBy({ left: dir * 160, behavior: 'smooth' });
+}
+
+/* ── Mobile nav ──────────────────────────────────────────── */
+function toggleMobileNav() {
+  const nav = document.getElementById('mobile-nav');
+  const btn = document.getElementById('hamburger-btn');
+  if (!nav) return;
+  const isOpen = nav.classList.toggle('open');
+  btn?.classList.toggle('open', isOpen);
+  if (isOpen) renderMobileNav();
+}
+
+function renderMobileNav() {
+  const el = document.getElementById('mobile-nav-links');
+  if (!el) return;
+  if (currentUser) {
+    el.innerHTML = `
+      <button class="btn-nav btn-nav-ghost" onclick="closeMobileNav(); gotoPage('about')">Quem somos</button>
+      <button class="btn-nav btn-nav-solid" onclick="closeMobileNav(); openCreate()">+ Publicar</button>
+      <div class="user-chip" onclick="closeMobileNav(); gotoPage('profile')">
+        <div class="avatar-sm">${currentUser.name[0].toUpperCase()}</div>
+        <span class="chip-name">${currentUser.name.split(' ')[0]}</span>
+      </div>
+      <button class="btn-dark-toggle" onclick="toggleDarkMode()" style="align-self:flex-start;">🌙</button>`;
+  } else {
+    el.innerHTML = `
+      <button class="btn-nav btn-nav-ghost" onclick="closeMobileNav(); gotoPage('about')">Quem somos</button>
+      <button class="btn-nav btn-nav-ghost" onclick="closeMobileNav(); openAuth('login')">Entrar</button>
+      <button class="btn-nav btn-nav-solid" onclick="closeMobileNav(); openAuth('register')">Criar conta</button>
+      <button class="btn-dark-toggle" onclick="toggleDarkMode()" style="align-self:flex-start;">🌙</button>`;
+  }
+}
+
+function closeMobileNav() {
+  document.getElementById('mobile-nav')?.classList.remove('open');
+  document.getElementById('hamburger-btn')?.classList.remove('open');
+}
+
+function mobileSearch() {
+  const val = document.getElementById('nav-search-mobile')?.value || '';
+  const main = document.getElementById('nav-search');
+  if (main) { main.value = val; renderGrid(); }
+}
+
+/* ── Region ratings ──────────────────────────────────────── */
+function renderRegionRatings() {
+  const el = document.getElementById('region-ratings-list');
+  if (!el) return;
+  const ratings = lsParse(LS.RATINGS) || [];
+  if (!ratings.length) return;
+
+  const regionMap = {};
+  listings.forEach(l => {
+    if (!regionMap[l.region]) regionMap[l.region] = { total: 0, count: 0 };
+    const sellerRatings = ratings.filter(r => r.toUserId === l.userId);
+    sellerRatings.forEach(r => {
+      regionMap[l.region].total += r.stars;
+      regionMap[l.region].count++;
+    });
+  });
+
+  const sorted = Object.entries(regionMap)
+    .filter(([, s]) => s.count > 0)
+    .sort(([, a], [, b]) => (b.total / b.count) - (a.total / a.count))
+    .slice(0, 5);
+
+  if (!sorted.length) return;
+
+  el.innerHTML = sorted.map(([region, s]) => {
+    const avg   = (s.total / s.count).toFixed(1);
+    const stars = starsHtml(avg);
+    return `
+      <div class="region-rating-row" onclick="filterByRegion('${region}')">
+        <span class="rr-name">${region}</span>
+        <span class="rr-meta">
+          <span class="rr-stars">${stars}</span>
+          <span class="rr-count">${avg} (${s.count})</span>
+        </span>
+      </div>`;
+  }).join('');
+}
+
+function filterByRegion(region) {
+  const sel = document.getElementById('f-region-select');
+  if (sel) { sel.value = region; applyFilters(); }
+  window.scrollTo({ top: document.querySelector('.cats-section')?.offsetTop || 0, behavior: 'smooth' });
+}
+
+/* ── Edit Profile ────────────────────────────────────────── */
+function saveProfileName() {
+  const nameInput = document.getElementById('p-name-edit');
+  const newName   = nameInput?.value.trim();
+  if (!newName || newName.length < 2) { showToast('⚠️ Nome inválido.'); return; }
+  currentUser.name = newName;
+  users = users.map(u => u.id === currentUser.id ? { ...u, name: newName } : u);
+  lsSave(LS.USERS, users);
+  lsSave(LS.CURRENT, currentUser);
+  renderProfile();
+  renderNav();
+  showToast('✅ Nome atualizado!');
+}
+
+function handleProfilePhoto(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const b64 = ev.target.result;
+    currentUser.photo = b64;
+    users = users.map(u => u.id === currentUser.id ? { ...u, photo: b64 } : u);
+    lsSave(LS.USERS, users);
+    lsSave(LS.CURRENT, currentUser);
+    renderProfile();
+    showToast('✅ Foto de perfil atualizada!');
+  };
+  reader.readAsDataURL(file);
+}
 
 /* ── Favorites ───────────────────────────────────────────── */
 function isFavorited(listingId) {
@@ -551,6 +685,8 @@ function openDetail(id) {
 ════════════════════════════════════════════════════════════ */
 function openCalendar() {
   if (!currentUser) { openAuth('login'); showToast('⚠️ Entra para pedir uma reserva.'); return; }
+  const l = listings.find(x => x.id === currentDetailId);
+  if (l?.userId === currentUser.id) { showToast('⚠️ Não podes reservar o teu próprio objeto.'); return; }
   closeModal('detail-overlay');
   const now = new Date();
   calYear  = now.getFullYear();
@@ -703,9 +839,26 @@ function renderProfile() {
   if (!currentUser) return;
   const mine = listings.filter(l => l.userId === currentUser.id);
 
-  setText('p-avatar', currentUser.name[0].toUpperCase());
   setText('p-name',   currentUser.name);
   setText('p-sub',    '📍 ' + currentUser.region + '  ·  Membro RentUp');
+
+  /* Avatar with photo support */
+  const avatarEl = document.getElementById('p-avatar');
+  if (avatarEl) {
+    if (currentUser.photo) avatarEl.innerHTML = `<img src="${currentUser.photo}" alt="foto">`;
+    else avatarEl.textContent = currentUser.name[0].toUpperCase();
+  }
+
+  /* Pre-fill name edit */
+  const nameEdit = document.getElementById('p-name-edit');
+  if (nameEdit) nameEdit.value = currentUser.name;
+
+  /* Avatar preview */
+  const prevEl = document.getElementById('p-avatar-preview');
+  if (prevEl) {
+    if (currentUser.photo) prevEl.innerHTML = `<img src="${currentUser.photo}" alt="foto">`;
+    else prevEl.textContent = currentUser.name[0].toUpperCase();
+  }
   setText('ps-listings', mine.length.toString());
 
   const rating   = getUserRating(currentUser.id);
@@ -905,6 +1058,7 @@ function submitRating() {
   closeModal('rating-overlay');
   showToast(`⭐ Avaliação de ${currentRating} estrela${currentRating>1?'s':''} enviada!`);
   renderProfile();
+  renderRegionRatings();
 }
 
 function hasRated(reservationId) {
