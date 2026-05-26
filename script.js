@@ -694,7 +694,6 @@ function openCalendar() {
   calStart = null;
   calEnd   = null;
 
-  const l = listings.find(x => x.id === currentDetailId);
   const info = document.getElementById('cal-listing-info');
   if (info && l) info.innerHTML = `<strong>${escHtml(l.title)}</strong> &nbsp;·&nbsp; <span style="color:var(--accent);font-weight:700;">${(+l.price).toFixed(2)}€/dia</span>`;
 
