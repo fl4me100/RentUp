@@ -58,7 +58,7 @@ Ou usa a extensão **Live Server** no VS Code para hot reload.
 
 ### 🌐 Demo online
 
-👉 **[rentup.vercel.app](https://rentup.vercel.app)** *(substituir pelo link real)*
+👉 **[RentUp](https://rent-up-two.vercel.app/)**
 
 ---
 
