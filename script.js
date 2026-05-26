@@ -100,7 +100,7 @@ function seedIfEmpty() {
   }
 
   const seeds = [
-    { title: 'Furadeira Bosch 18V Professional',   category: 'Ferramentas', description: 'Furadeira percutora profissional com 2 baterias e mala de transporte. Excelente estado, pouco usada.', price: 8,  region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop' },
+    { title: 'Berbequim Bosch 18V Professional',   category: 'Ferramentas', description: 'Berbequim percutora profissional com 2 baterias e mala de transporte. Excelente estado, pouco usada.', price: 8,  region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop' },
     { title: 'Bicicleta Montanha Trek Marlin 5',    category: 'Desporto',    description: '21 velocidades, quadro alumínio, travões a disco hidráulicos. Capacete incluído. Perfeita para trilhos.', price: 15, region: 'Porto',   photo: 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=600&auto=format&fit=crop' },
     { title: 'Tenda Campismo 4 Pessoas Quechua',    category: 'Camping',     description: 'Tenda familiar impermeável (3000mm HH). Fácil montagem em 10 min. Estacas e cordas incluídas.', price: 12, region: 'Braga',   photo: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&auto=format&fit=crop' },
     { title: 'Drone DJI Mini 3 Pro',                category: 'Tecnologia',  description: 'Câmara 4K, autonomia 38 min, sem necessidade de registo. 2 baterias e carregador incluídos.', price: 35, region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&auto=format&fit=crop' },
