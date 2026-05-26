@@ -114,24 +114,10 @@ As principais entidades do sistema são:
 
 ## 👥 Equipa
 
-| Nome | Nº de aluno |
-|---|---|
-| Afonso Alves | 132403 |
-| Diogo Arede | 132465 |
-| Nuno Gomes | 132055 |
-| Rafael Simão Lopes | 131900 |
+| Nome |
+|---|---|---|---|
+|Afonso Alves|Diogo Arede|Nuno Gomes|Rafael Simão Lopes|
 
-**Unidade curricular:** 40431 — Modelação e Análise de Sistemas  
+**Unidade curricular:** Modelação e Análise de Sistemas  
 **Instituição:** Universidade de Aveiro  
 **Ano letivo:** 2025/2026
-
----
-
-## 📄 Documentação
-
-O documento SRS completo (E4) está disponível na pasta do projeto e inclui:
-- 11 casos de utilização detalhados
-- Regras de negócio (BR-01 a BR-10)
-- Requisitos não funcionais (RNF-01 a RNF-07)
-- Diagrama de classes do domínio
-- Roadmap de desenvolvimento em 6 épicos
