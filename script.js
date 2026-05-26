@@ -148,6 +148,12 @@ function gotoPage(name) {
 /* ════════════════════════════════════════════════════════════
    NAVBAR
 ════════════════════════════════════════════════════════════ */
+function navAvatarHtml() {
+  if (currentUser?.photo)
+    return `<img src="${currentUser.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  return currentUser?.name[0].toUpperCase() || '?';
+}
+
 function renderNav() {
   const el = document.getElementById('nav-actions');
   if (!el) return;
@@ -157,7 +163,7 @@ function renderNav() {
       <button class="btn-nav btn-nav-ghost" onclick="gotoPage('about')" style="width:auto;">Quem somos</button>
       <button class="btn-nav btn-nav-solid" onclick="openCreate()">+ Publicar</button>
       <div class="user-chip" onclick="gotoPage('profile')">
-        <div class="avatar-sm">${currentUser.name[0].toUpperCase()}</div>
+        <div class="avatar-sm">${navAvatarHtml()}</div>
         <span class="chip-name">${currentUser.name.split(' ')[0]}</span>
       </div>`;
   } else {
@@ -166,6 +172,16 @@ function renderNav() {
       <button class="btn-nav btn-nav-ghost" onclick="openAuth('login')">Entrar</button>
       <button class="btn-nav btn-nav-solid" onclick="openAuth('register')">Criar conta</button>`;
   }
+}
+
+function renderNavProfile() {
+  const el = document.getElementById('nav-actions-profile');
+  if (!el || !currentUser) return;
+  el.innerHTML = `
+    <div class="user-chip" onclick="gotoPage('profile')">
+      <div class="avatar-sm">${navAvatarHtml()}</div>
+      <span class="chip-name">${currentUser.name.split(' ')[0]}</span>
+    </div>`;
 }
 
 function renderNavProfile() {
@@ -304,7 +320,7 @@ function renderMobileNav() {
       <button class="btn-nav btn-nav-ghost" onclick="closeMobileNav(); gotoPage('about')">Quem somos</button>
       <button class="btn-nav btn-nav-solid" onclick="closeMobileNav(); openCreate()">+ Publicar</button>
       <div class="user-chip" onclick="closeMobileNav(); gotoPage('profile')">
-        <div class="avatar-sm">${currentUser.name[0].toUpperCase()}</div>
+        <div class="avatar-sm">${navAvatarHtml()}</div>
         <span class="chip-name">${currentUser.name.split(' ')[0]}</span>
       </div>
       <button class="btn-dark-toggle" onclick="toggleDarkMode()" style="align-self:flex-start;">🌙</button>`;
@@ -529,12 +545,24 @@ function doRegister() {
   };
   users.push(u);
   lsSave(LS.USERS, users);
+
+  /* Mostrar popup de verificação de email */
+  closeModal('auth-overlay');
+  window._pendingUser = u;
+  document.getElementById('verify-email-addr').textContent = email;
+  openModal('verify-overlay');
+}
+
+function confirmEmail() {
+  const u = window._pendingUser;
+  if (!u) return;
   currentUser = u;
   lsSave(LS.CURRENT, u);
-  closeModal('auth-overlay');
+  window._pendingUser = null;
+  closeModal('verify-overlay');
   renderNav();
   updateStats();
-  showToast('🎉 Conta criada! Bem-vindo/a ao RentUp, ' + name.split(' ')[0] + '!');
+  showToast('🎉 Email confirmado! Bem-vindo/a ao RentUp, ' + u.name.split(' ')[0] + '!');
 }
 
 function doLogout() {
