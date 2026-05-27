@@ -818,7 +818,7 @@ function renderCalendar() {
     if (inRange)  cls += ' cal-day-range';
 
     const click = (!isPast && !isBook) ? `onclick="selectCalDay('${dateStr}')"` : '';
-    html += `<div class="${cls}" ${click}>${d}</div>`;
+    html += `<div class="${cls}" data-day="${d}" ${click}>${d}</div>`;
   }
   grid.innerHTML = html;
   updateCalSummary();
