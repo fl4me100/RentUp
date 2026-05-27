@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+	<title>Test Suite 1</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Registo de Conta</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>https://rent-up-two.vercel.app/<datalist><option>https://rent-up-two.vercel.app/</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.btn-nav-solid<datalist><option>id=auth-trigger</option><option>css=.btn-nav-solid</option></datalist></td><td>8000</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Criar conta')]<datalist><option>xpath=//span[contains(text(), 'Criar conta')]</option><option>xpath=//button[contains(text(),'Criar conta')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>id=tab-register<datalist><option>id=r-user</option><option>id=tab-register</option></datalist></td><td>5000</td>
+</tr>
+<tr><td>click</td><td>id=tab-register<datalist><option>id=r-pass</option><option>id=tab-register</option></datalist></td><td></td>
+</tr>
+<tr><td>type</td><td>id=r-name<datalist><option>id=r-name</option></datalist></td><td>João Silva Teste</td>
+</tr>
+<tr><td>type</td><td>id=r-email<datalist><option>id=r-email</option></datalist></td><td>katalon.test.${Math.random().toString(36).slice(2,8)}@mail.pt</td>
+</tr>
+<tr><td>type</td><td>id=r-pass<datalist><option>id=r-pass</option></datalist></td><td>123456</td>
+</tr>
+<tr><td>addSelection</td><td>id=r-region<datalist><option>id=r-region</option></datalist></td><td>label=Lisboa</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Criar conta gratuita')]<datalist><option>xpath=//button[contains(text(),'Criar conta gratuita')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.toast<datalist><option>css=.toast</option></datalist></td><td>10000</td>
+</tr>
+<tr><td>verifyText</td><td>css=.toast<datalist><option>css=.toast</option></datalist></td><td>Conta criada</td>
+</tr>
+<tr><td></td><td><datalist><option></option></datalist></td><td></td>
+</tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Login + Anúncio</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>https://rent-up-two.vercel.app/<datalist><option>/</option><option>https://rent-up-two.vercel.app/</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.btn-nav-solid<datalist><option>css=.btn-nav-solid</option></datalist></td><td>8000</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Entrar')]<datalist><option>xpath=//button[contains(text(),'Entrar')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>id=l-email<datalist><option>id=l-email</option></datalist></td><td>4000</td>
+</tr>
+<tr><td>type</td><td>id=l-email<datalist><option>id=l-email</option></datalist></td><td>demo@rentup.pt</td>
+</tr>
+<tr><td>type</td><td>id=l-pass<datalist><option>id=l-pass</option></datalist></td><td>demo123</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Entrar na conta')]<datalist><option>xpath=//button[contains(text(),'Entrar na conta')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.user-chip<datalist><option>css=.user-chip</option></datalist></td><td>8000</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'+ Publicar')]<datalist><option>xpath=//button[contains(text(),'+ Publicar')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>id=c-title<datalist><option>id=c-title</option></datalist></td><td>6000</td>
+</tr>
+<tr><td>type</td><td>id=c-title<datalist><option>id=c-title</option></datalist></td><td>Berbequim Bosch Teste Katalon</td>
+</tr>
+<tr><td>select</td><td>id=c-cat<datalist><option>id=c-cat</option></datalist></td><td>label=Ferramentas</td>
+</tr>
+<tr><td>type</td><td>id=c-price<datalist><option>id=c-price</option></datalist></td><td>15</td>
+</tr>
+<tr><td>type</td><td>id=c-desc<datalist><option>id=c-desc</option></datalist></td><td>Teste automatizado Katalon Recorder</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Publicar anúncio agora')]<datalist><option>xpath=//button[contains(text(),'Publicar anúncio agora')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.toast<datalist><option>css=.toast</option></datalist></td><td>10000</td>
+</tr>
+<tr><td>verifyText</td><td>css=.toast<datalist><option>css=.toast</option></datalist></td><td>publicado com sucesso</td>
+</tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Pesquisa e Filtros</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>https://rent-up-two.vercel.app/<datalist><option>/</option><option>https://rent-up-two.vercel.app/</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>id=nav-search<datalist><option>id=nav-search</option></datalist></td><td>6000</td>
+</tr>
+<tr><td>type</td><td>id=nav-search<datalist><option>id=nav-search</option></datalist></td><td>Berbequim</td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.card<datalist><option>css=.card</option></datalist></td><td>7000</td>
+</tr>
+<tr><td>addSelection</td><td>id=f-region-select<datalist><option>id=f-region-select</option></datalist></td><td>label=Lisboa</td>
+</tr>
+<tr><td>type</td><td>id=f-min<datalist><option>id=f-min</option></datalist></td><td>5</td>
+</tr>
+<tr><td>type</td><td>id=f-max<datalist><option>id=f-max</option></datalist></td><td>30</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Aplicar filtros')]<datalist><option>xpath=//button[contains(text(),'Aplicar filtros')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.listings-count<datalist><option>css=.listings-count</option></datalist></td><td>6000</td>
+</tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Reservar objeto</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>https://rent-up-two.vercel.app/<datalist><option>https://rent-up-two.vercel.app/</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.btn-nav-solid<datalist><option>css=.btn-nav-solid</option></datalist></td><td>6000</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Entrar')]<datalist><option>xpath=//button[contains(text(),'Entrar')]</option></datalist></td><td></td>
+</tr>
+<tr><td>type</td><td>id=l-email<datalist><option>id=l-email</option></datalist></td><td>demo@rentup.pt</td>
+</tr>
+<tr><td>type</td><td>id=l-pass<datalist><option>id=l-pass</option></datalist></td><td>id=l-passdemo123</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Entrar na conta')]<datalist><option>xpath=//button[contains(text(),'Entrar na conta')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.card<datalist><option>css=.card</option></datalist></td><td>8000</td>
+</tr>
+<tr><td>click</td><td>css=.card:first-child<datalist><option>css=.card:first-child</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>xpath=//button[contains(text(),'Pedir reserva')]<datalist><option>xpath=//button[contains(text(),'Pedir reserva')]</option></datalist></td><td>7000</td>
+</tr>
+<tr><td>click</td><td>xpath=//button[contains(text(),'Pedir reserva')]<datalist><option>xpath=//button[contains(text(),'Pedir reserva')]</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.cal-grid<datalist><option>css=.cal-grid</option></datalist></td><td>6000</td>
+</tr>
+<tr><td>click</td><td>css=.cal-day-avail:nth-child(10)<datalist><option>css=.cal-day-avail:nth-child(10)</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.cal-day-avail:nth-child(15)<datalist><option>css=.cal-day-avail:nth-child(15)</option></datalist></td><td>4000</td>
+</tr>
+<tr><td>click</td><td>css=.cal-day-avail:nth-child(15)<datalist><option>css=.cal-day-avail:nth-child(15)</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>id=cal-confirm-btn<datalist><option>id=cal-confirm-btn</option></datalist></td><td>5000</td>
+</tr>
+<tr><td>click</td><td>id=cal-confirm-btn<datalist><option>id=cal-confirm-btn</option></datalist></td><td></td>
+</tr>
+<tr><td>waitForElementPresent</td><td>css=.toast<datalist><option>css=.toast</option></datalist></td><td>8000</td>
+</tr>
+</tbody></table>
+</body>
+</html>
