@@ -546,6 +546,8 @@ function doRegister() {
   users.push(u);
   lsSave(LS.USERS, users);
 
+  showToast('✅ Conta criada! Verifica o teu email.');
+
   /* Mostrar popup de verificação de email */
   closeModal('auth-overlay');
   window._pendingUser = u;
