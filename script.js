@@ -1166,7 +1166,7 @@ function setText(id, val) {
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')F
+    .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
