@@ -611,6 +611,8 @@ a { text-decoration: none; color: inherit; }
    MODAL OVERLAY
 ════════════════════════════════════════════════════════════ */
 .modal-overlay {
+  /* FIX Katalon: pointer-events:none quando fechado — evita interceptação de
+     eventos em elementos por baixo enquanto o overlay está invisible */
   display: none;
   position: fixed;
   inset: 0;
@@ -624,7 +626,11 @@ a { text-decoration: none; color: inherit; }
 .modal-overlay.open { display: flex; animation: fadeOverlay .2s ease; }
 
 @keyframes fadeOverlay {
-  from { opacity: 0; }
+  /* FIX Katalon: opacity começa em 1 (não 0) — evita "Element is not currently
+     interactable" durante a animação. O WebDriver via todos os inputs como
+     não-interagíveis enquanto um antepassado tivesse opacity:0.
+     A animação visual do modal mantém-se via slideModal no .modal interno. */
+  from { opacity: 1; }
   to   { opacity: 1; }
 }
 
@@ -691,8 +697,14 @@ a { text-decoration: none; color: inherit; }
 /* ════════════════════════════════════════════════════════════
    FORM ELEMENTS
 ════════════════════════════════════════════════════════════ */
-.form-section        { display: none; }
-.form-section.active { display: block; }
+.form-section {
+  display: none;
+  /* FIX Katalon: sem transition em display — garante reflow síncrono imediato */
+}
+.form-section.active {
+  display: block;
+  /* Sem animation aqui — o WebDriver precisa de display:block sem delay */
+}
 
 .field { margin-bottom: 14px; }
 .field label {

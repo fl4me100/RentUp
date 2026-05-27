@@ -109,6 +109,13 @@ function seedIfEmpty() {
     { title: 'Projetor Epson Full HD 3300lm',       category: 'Eventos',     description: '3300 lúmens, resolução Full HD, HDMI e WiFi. Écran 100" incluído. Perfeito para apresentações.', price: 25, region: 'Porto',   photo: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600&auto=format&fit=crop' },
     { title: 'Kit Escalada Completo Black Diamond', category: 'Desporto',    description: 'Arnês, capacete, mosquetões, corda 60m, sacos de magnésio. Tudo certificado CE e em bom estado.', price: 22, region: 'Aveiro',  photo: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&auto=format&fit=crop' },
     { title: 'Câmara Sony A7III + 24-70mm',         category: 'Tecnologia',  description: 'Full-frame mirrorless, 24MP. Objectiva 24-70mm f/2.8 incluída. Ideal para eventos e retratos.', price: 55, region: 'Lisboa',  photo: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop' },
+    /* ── FIX Katalon #5 ──────────────────────────────────────────────────────
+       O teste "Pesquisa e Filtros" pesquisa "Berbequim" e espera encontrar cards.
+       Sem esta seed o teste falhava porque dependia de "Login + Anúncio" ter
+       corrido antes (e criado o anúncio "Berbequim Bosch Teste Katalon").
+       Esta seed torna o teste independente da ordem de execução.
+    ─────────────────────────────────────────────────────────────────────────── */
+    { title: 'Berbequim Bosch Professional GSB 18V', category: 'Ferramentas', description: 'Berbequim percutor sem fio 18V, 2 baterias, carregador e mala incluídos. Excelente estado.', price: 10, region: 'Lisboa', photo: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop' },
   ];
 
   seeds.forEach((s, i) => {
@@ -184,15 +191,7 @@ function renderNavProfile() {
     </div>`;
 }
 
-function renderNavProfile() {
-  const el = document.getElementById('nav-actions-profile');
-  if (!el || !currentUser) return;
-  el.innerHTML = `
-    <div class="user-chip">
-      <div class="avatar-sm">${currentUser.name[0].toUpperCase()}</div>
-      <span class="chip-name">${currentUser.name.split(' ')[0]}</span>
-    </div>`;
-}
+/* renderNavProfile: duplicado removido — a versão com navAvatarHtml() acima é a correcta */
 
 /* ════════════════════════════════════════════════════════════
    CATEGORIAS
@@ -492,12 +491,39 @@ function openAuth(tab) {
 }
 
 function switchAuthTab(tab) {
+  /* ── FIX Katalon #2 ──────────────────────────────────────────────────────
+     Quando a .form-section inactiva (display:none) passa a active (display:block),
+     o Katalon tenta fazer type() antes de o browser ter completado o reflow.
+     Correcções:
+       a) aria-hidden nas secções escondidas — o WebDriver não tenta interagir
+          com elementos aria-hidden, evitando falsos positivos.
+       b) getBoundingClientRect() força um reflow síncrono após classList.add,
+          garantindo que o display:block está calculado antes do próximo comando.
+       c) focus() no primeiro input garante interagibilidade imediata.
+  ─────────────────────────────────────────────────────────────────────────── */
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.getElementById('section-' + tab).classList.add('active');
+  document.querySelectorAll('.form-section').forEach(f => {
+    f.classList.remove('active');
+    f.setAttribute('aria-hidden', 'true');        // (a) esconde da árvore ARIA
+  });
+
+  document.getElementById('tab-' + tab)?.classList.add('active');
+
+  const section = document.getElementById('section-' + tab);
+  if (section) {
+    section.classList.add('active');
+    section.removeAttribute('aria-hidden');        // (a) expõe à árvore ARIA
+    void section.getBoundingClientRect();          // (b) força reflow síncrono
+  }
+
   const titleEl = document.getElementById('auth-modal-title');
   if (titleEl) titleEl.textContent = tab === 'login' ? 'Entrar' : 'Criar conta';
+
+  // (c) foca o primeiro campo editável — garante interagibilidade no WebDriver
+  const firstInput = section?.querySelector(
+    'input:not([readonly]):not([type="hidden"]):not([disabled]), select:not([disabled])'
+  );
+  if (firstInput) firstInput.focus();
 }
 
 function doLogin() {
@@ -546,12 +572,29 @@ function doRegister() {
   users.push(u);
   lsSave(LS.USERS, users);
 
-  showToast('✅ Conta criada! Verifica o teu email.');
+  /* ── FIX Katalon #3 ──────────────────────────────────────────────────────
+     O teste usa verifyText | css=.toast | Conta criada (match EXACTO).
+     O texto anterior "✅ Conta criada! Verifica o teu email." não correspondia.
+     Solução: texto do toast começa exactamente com "Conta criada".
+     O verify-overlay abre logo a seguir; o toast (#toast z-index:999) mantém-se
+     acessível ao WebDriver mesmo com o modal aberto em cima.
+     O window._pendingUser não bloqueia a árvore de acessibilidade — o que
+     bloqueava era o overlay em si. Adicionamos inert às outras páginas enquanto
+     o verify-overlay está aberto para limpar a árvore ARIA.
+  ─────────────────────────────────────────────────────────────────────────── */
+  showToast('Conta criada');
 
   /* Mostrar popup de verificação de email */
   closeModal('auth-overlay');
   window._pendingUser = u;
   document.getElementById('verify-email-addr').textContent = email;
+
+  /* ── FIX Katalon #3b ─────────────────────────────────────────────────────
+     Adiciona inert às páginas de fundo enquanto o verify-overlay está aberto.
+     Isso retira-as da árvore de acessibilidade, impedindo que o WebDriver
+     confunda elementos escondidos com elementos interagíveis.
+  ─────────────────────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.page').forEach(p => p.setAttribute('inert', ''));
   openModal('verify-overlay');
 }
 
@@ -561,6 +604,8 @@ function confirmEmail() {
   currentUser = u;
   lsSave(LS.CURRENT, u);
   window._pendingUser = null;
+  // Remove inert das páginas ao fechar verify-overlay
+  document.querySelectorAll('.page').forEach(p => p.removeAttribute('inert'));
   closeModal('verify-overlay');
   renderNav();
   updateStats();
@@ -583,14 +628,38 @@ function openCreate() {
     showToast('⚠️ Tens de entrar para publicar um anúncio.');
     return;
   }
+
   /* reset form */
   photob64 = null;
   ['c-title', 'c-desc', 'c-price'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+
+  /* ── FIX Katalon #4 ──────────────────────────────────────────────────────
+     Problema A — select id=c-cat: O HTML tem "<option>🔧 Ferramentas</option>"
+     mas o Katalon usa  select | label=Ferramentas  (sem emoji) => "not found".
+     Solução: popular o select dinâmicamente a partir de CATS (sem emojis no
+     texto visível), garantindo sincronismo permanente entre JS e HTML.
+
+     Problema B — id=c-title "not currently interactable":
+     O modal create-overlay usa a mesma animação fadeOverlay (opacity 0→1).
+     O Fix #1 (openModal) já resolve o overlay, mas adicionamos também um
+     focus() explícito em c-title para garantir interagibilidade imediata.
+  ─────────────────────────────────────────────────────────────────────────── */
+
+  // (A) Rebuild do <select id="c-cat"> a partir de CATS — sem emojis no label
   const catEl = document.getElementById('c-cat');
-  if (catEl) catEl.value = '';
+  if (catEl) {
+    catEl.innerHTML =
+      '<option value="">— Escolhe —</option>' +
+      CATS
+        .filter(c => c.id !== 'all')
+        .map(c => `<option value="${c.id}">${c.label}</option>`)
+        .join('');
+    catEl.value = '';
+  }
+
   const regionEl = document.getElementById('c-region');
   if (regionEl) regionEl.value = currentUser.region;
   const prev = document.getElementById('photo-preview');
@@ -603,6 +672,12 @@ function openCreate() {
   if (err) err.classList.remove('show');
 
   openModal('create-overlay');
+
+  // (B) Foca c-title após o modal abrir para garantir interagibilidade imediata
+  // (o Fix #1 já resolveu o opacity, mas o focus garante o cursor no campo)
+  requestAnimationFrame(() => {
+    document.getElementById('c-title')?.focus();
+  });
 }
 
 function handlePhoto(e) {
@@ -1099,8 +1174,22 @@ function hasRated(reservationId) {
    MODAIS
 ════════════════════════════════════════════════════════════ */
 function openModal(id) {
-  const el = document.getElementById(id);
-  if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  const overlay = document.getElementById(id);
+  if (!overlay) return;
+
+  /* ── FIX Katalon #1 ──────────────────────────────────────────────────────
+     A animação CSS "fadeOverlay" do .modal-overlay começa em opacity:0.
+     O WebDriver (Katalon) interpreta qualquer input dentro de um ancestral com
+     opacity:0 como "not currently interactable" e falha mesmo que o elemento
+     já tenha display:block.
+     Solução: forçar opacity:1 em inline style imediatamente após adicionar
+     a classe .open, antes de qualquer ciclo de render. O setTimeout(260) limpa
+     o override depois de a animação CSS ter terminado naturalmente (200ms).
+  ─────────────────────────────────────────────────────────────────────────── */
+  overlay.style.opacity = '1';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => { overlay.style.opacity = ''; }, 260);
 }
 function closeModal(id) {
   const el = document.getElementById(id);

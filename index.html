@@ -35,16 +35,16 @@
       </div>
 
       <!-- LOGIN -->
-      <div class="form-section active" id="section-login">
+      <div class="form-section active" id="section-login" aria-hidden="false">
         <div class="alert alert-error" id="err-login">Email ou palavra-passe incorretos.</div>
         <div class="field">
           <label>Email</label>
-          <input type="email" id="l-email" placeholder="o.teu@email.pt" autocomplete="email">
+          <input type="email" id="l-email" placeholder="o.teu@email.pt" autocomplete="email" tabindex="0">
         </div>
         <div class="field">
           <label>Palavra-passe</label>
           <input type="password" id="l-pass" placeholder="••••••••"
-                 autocomplete="current-password"
+                 autocomplete="current-password" tabindex="0"
                  onkeydown="if(event.key==='Enter') doLogin()">
         </div>
         <button class="btn btn-brand" style="margin-top:6px;" onclick="doLogin()">Entrar na conta</button>
@@ -56,19 +56,20 @@
       </div>
 
       <!-- REGISTO -->
-      <div class="form-section" id="section-register">
+      <!-- FIX Katalon: aria-hidden inicial — o JS remove-o ao activar a secção -->
+      <div class="form-section" id="section-register" aria-hidden="true">
         <div class="alert alert-error" id="err-register"></div>
         <div class="field">
           <label>Nome completo *</label>
-          <input type="text" id="r-name" placeholder="Ex: Maria Silva">
+          <input type="text" id="r-name" tabindex="0" placeholder="Ex: Maria Silva">
         </div>
         <div class="field">
           <label>Email *</label>
-          <input type="email" id="r-email" placeholder="o.teu@email.pt">
+          <input type="email" id="r-email" tabindex="0" placeholder="o.teu@email.pt">
         </div>
         <div class="field">
           <label>Palavra-passe * (mínimo 6 caracteres)</label>
-          <input type="password" id="r-pass" placeholder="Escolhe uma palavra-passe segura">
+          <input type="password" id="r-pass" tabindex="0" placeholder="Escolhe uma palavra-passe segura">
         </div>
         <div class="field">
           <label>Região *</label>
@@ -130,7 +131,8 @@
 
       <div class="field">
         <label>Título *</label>
-        <input type="text" id="c-title"
+        <!-- FIX Katalon: tabindex explícito garante interagibilidade imediata -->
+        <input type="text" id="c-title" tabindex="0"
                placeholder='Ex: "Furadeira Bosch Professional 18V"'
                maxlength="80">
       </div>
@@ -138,18 +140,21 @@
       <div class="field-row">
         <div class="field">
           <label>Categoria *</label>
+          <!-- FIX Katalon: opções sem emoji no texto — o Katalon usa
+               select | label=Ferramentas (sem emoji) e falhava com "🔧 Ferramentas".
+               O JS (openCreate) também reconstrói este select dinamicamente de CATS. -->
           <select id="c-cat">
             <option value="">— Escolhe —</option>
-            <option value="Ferramentas">🔧 Ferramentas</option>
-            <option value="Desporto">⚽ Desporto</option>
-            <option value="Jardim">🌿 Jardim</option>
-            <option value="Tecnologia">💻 Tecnologia</option>
-            <option value="Música">🎸 Música</option>
-            <option value="Camping">⛺ Camping</option>
-            <option value="Eventos">🎉 Eventos</option>
-            <option value="Viagem">✈️ Viagem</option>
-            <option value="Casa">🏠 Casa</option>
-            <option value="Outro">📦 Outro</option>
+            <option value="Ferramentas">Ferramentas</option>
+            <option value="Desporto">Desporto</option>
+            <option value="Jardim">Jardim</option>
+            <option value="Tecnologia">Tecnologia</option>
+            <option value="Música">Música</option>
+            <option value="Camping">Camping</option>
+            <option value="Eventos">Eventos</option>
+            <option value="Viagem">Viagem</option>
+            <option value="Casa">Casa</option>
+            <option value="Outro">Outro</option>
           </select>
         </div>
         <div class="field">
